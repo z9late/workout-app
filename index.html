@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRIND | High-Performance Fitness Plan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .tab-btn.active { border-bottom: 2px solid #ef4444; color: #ef4444; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-extrabold tracking-tighter text-white">G R I N D</h1>
+            <div class="hidden md:flex space-x-6 text-sm font-semibold uppercase tracking-wider">
+                <a href="#schedule" class="hover:text-red-500 transition">Schedule</a>
+                <a href="#workouts" class="hover:text-red-500 transition">Workouts</a>
+                <a href="#progression" class="hover:text-red-500 transition">Progression</a>
+            </div>
+            <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-bold transition">LOG SESSION</button>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-12 max-w-5xl">
+
+        <!-- Hero Section -->
+        <section class="mb-20 text-center">
+            <span class="text-red-500 font-bold tracking-widest uppercase text-xs">For Abdulaziz</span>
+            <h2 class="text-5xl md:text-7xl font-black mt-4 mb-6">OPTIMIZED PERFORMANCE</h2>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto">
+                A data-driven engineering approach to fitness. 4 sessions per week, sub-60 minutes, maximized for hypertrophy and power.
+            </p>
+        </section>
+
+        <!-- Weekly Structure -->
+        <section id="schedule" class="mb-20">
+            <h3 class="text-2xl font-bold mb-8 flex items-center">
+                <i class="fas fa-calendar-alt text-red-500 mr-3"></i> Weekly Structure
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
+                    <span class="text-slate-500 text-sm font-bold uppercase">Monday</span>
+                    <h4 class="text-xl font-bold mt-2">Upper A</h4>
+                    <p class="text-red-500 text-xs font-bold uppercase mt-1">Power Focus</p>
+                </div>
+                <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
+                    <span class="text-slate-500 text-sm font-bold uppercase">Tuesday</span>
+                    <h4 class="text-xl font-bold mt-2">Lower A</h4>
+                    <p class="text-red-500 text-xs font-bold uppercase mt-1">Power Focus</p>
+                </div>
+                <div class="bg-slate-900/30 p-6 rounded-xl border border-slate-800/50 flex flex-col justify-center">
+                    <span class="text-slate-500 text-sm font-bold uppercase">Wednesday</span>
+                    <h4 class="text-xl font-bold mt-2 opacity-50 italic">Deep Work</h4>
+                </div>
+                <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
+                    <span class="text-slate-500 text-sm font-bold uppercase">Thursday</span>
+                    <h4 class="text-xl font-bold mt-2">Upper B</h4>
+                    <p class="text-red-500 text-xs font-bold uppercase mt-1">Hypertrophy</p>
+                </div>
+                <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
+                    <span class="text-slate-500 text-sm font-bold uppercase">Friday</span>
+                    <h4 class="text-xl font-bold mt-2">Lower B</h4>
+                    <p class="text-red-500 text-xs font-bold uppercase mt-1">Hypertrophy</p>
+                </div>
+                <div class="col-span-2 bg-slate-900/30 p-6 rounded-xl border border-slate-800/50 flex items-center justify-center">
+                    <h4 class="text-xl font-bold opacity-50 italic">Weekend: Recovery & Planning</h4>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workouts Tabs -->
+        <section id="workouts" class="mb-20">
+            <div class="flex justify-between items-end mb-8">
+                <h3 class="text-2xl font-bold flex items-center">
+                    <i class="fas fa-dumbbell text-red-500 mr-3"></i> Workout Modules
+                </h3>
+            </div>
+
+            <!-- Tab Buttons -->
+            <div class="flex space-x-8 border-b border-slate-800 mb-8 overflow-x-auto whitespace-nowrap pb-1">
+                <button onclick="openTab(event, 'upperA')" class="tab-btn active px-4 py-2 font-bold transition uppercase text-sm">Upper A</button>
+                <button onclick="openTab(event, 'lowerA')" class="tab-btn px-4 py-2 font-bold transition uppercase text-sm">Lower A</button>
+                <button onclick="openTab(event, 'upperB')" class="tab-btn px-4 py-2 font-bold transition uppercase text-sm">Upper B</button>
+                <button onclick="openTab(event, 'lowerB')" class="tab-btn px-4 py-2 font-bold transition uppercase text-sm">Lower B</button>
+            </div>
+
+            <!-- Tab Content: Upper A -->
+            <div id="upperA" class="tab-content active bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-800 text-slate-400 text-xs uppercase tracking-widest">
+                        <tr>
+                            <th class="px-6 py-4">Exercise</th>
+                            <th class="px-6 py-4 text-center">Sets</th>
+                            <th class="px-6 py-4 text-center">Reps</th>
+                            <th class="px-6 py-4 text-right">Rest</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                        <tr>
+                            <td class="px-6 py-4 font-semibold">Flat Barbell Bench Press</td>
+                            <td class="px-6 py-4 text-center">3</td>
+                            <td class="px-6 py-4 text-center">5 - 8</td>
+                            <td class="px-6 py-4 text-right text-slate-400">180s</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 font-semibold">Weighted Pull-Ups</td>
+                            <td class="px-6 py-4 text-center">3</td>
+                            <td class="px-6 py-4 text-center">6 - 8</td>
+                            <td class="px-6 py-4 text-right text-slate-400">120s</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 font-semibold">Overhead Press (Barbell)</td>
+                            <td class="px-6 py-4 text-center">3</td>
+                            <td class="px-6 py-4 text-center">8 - 10</td>
+                            <td class="px-6 py-4 text-right text-slate-400">120s</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 font-semibold">Barbell Rows</td>
+                            <td class="px-6 py-4 text-center">3</td>
+                            <td class="px-6 py-4 text-center">8 - 10</td>
+                            <td class="px-6 py-4 text-right text-slate-400">120s</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Tab Content: Lower A -->
+            <div id="lowerA" class="tab-content bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-800 text-slate-400 text-xs uppercase tracking-widest">
+                        <tr>
+                            <th class="px-6 py-4">Exercise</th>
+                            <th class="px-6 py-4 text-center">Sets</th>
+                            <th class="px-6 py-4 text-center">Reps</th>
+                            <th class="px-6 py-4 text-right">Rest</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                        <tr>
+                            <td class="px-6 py-4 font-semibold">Back Squat</td>
+                            <td class="px-6 py-4 text-center">3</td>
+                            <td class="px-6 py-4 text-center">5 - 8</td>
+                            <td class="px-6 py-4 text-right text-slate-400">180s</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 font-semibold">Romanian Deadlift</td>
+                            <td class="px-6 py-4 text-center">3</td>
+                            <td class="px-6 py-4 text-center">8 - 10</td>
+                            <td class="px-6 py-4 text-right text-slate-400">120s</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 font-semibold">Leg Press</td>
+                            <td class="px-6 py-4 text-center">3</td>
+                            <td class="px-6 py-4 text-center">10 - 12</td>
+                            <td class="px-6 py-4 text-right text-slate-400">90s</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 font-semibold">Calf Raises</td>
+                            <td class="px-6 py-4 text-center">4</td>
+                            <td class="px-6 py-4 text-center">12 - 15</td>
+                            <td class="px-6 py-4 text-right text-slate-400">60s</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Tab Content: Upper B -->
+            <div id="upperB" class="tab-content bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-800 text-slate-400 text-xs uppercase tracking-widest">
+                        <tr>
+                            <th class="px-6 py-4">Exercise</th>
+                            <th class="px-6 py-4 text-center">Sets</th>
+                            <th class="px-6 py-4 text-center">Reps</th>
+                            <th class="px-6 py-4 text-right">Rest</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                        <tr>
+                            <td class="px-6 py-4 font-semibold">Incline Dumbbell Bench</td>
+                            <td class="px-6 py-4 text-center">3</td>
+                            <td class="px-6 py-4 text-center">10 - 12</td>
+                            <td class="px-6 py-4 text-right text-slate-400">90s</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 font-semibold">Lat Pulldowns</td>
+                            <td class="px-6 py-4 text-center">3</td>
+                            <td class="px-6 py-4 text-center">10 - 12</td>
+                            <td class="px-6 py-4 text-right text-slate-400">90s</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 font-semibold">Lateral Raises</td>
+                            <td class="px-6 py-4 text-center">3</td>
+                            <td class="px-6 py-4 text-center">15 - 20</td>
+                            <td class="px-6 py-4 text-right text-slate-400">60s</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 font-semibold">Face Pulls</td>
+                            <td class="px-6 py-4 text-center">3</td>
+                            <td class="px-6 py-4 text-center">15 - 20</td>
+                            <td class="px-6 py-4 text-right text-slate-400">60s</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Tab Content: Lower B -->
+            <div id="lowerB" class="tab-content bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-800 text-slate-400 text-xs uppercase tracking-widest">
+                        <tr>
+                            <th class="px-6 py-4">Exercise</th>
+                            <th class="px-6 py-4 text-center">Sets</th>
+                            <th class="px-6 py-4 text-center">Reps</th>
+                            <th class="px-6 py-4 text-right">Rest</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                        <tr>
+                            <td class="px-6 py-4 font-semibold">Leg Extensions</td>
+                            <td class="px-6 py-4 text-center">3</td>
+                            <td class="px-6 py-4 text-center">12 - 15</td>
+                            <td class="px-6 py-4 text-right text-slate-400">90s</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 font-semibold">Leg Curls</td>
+                            <td class="px-6 py-4 text-center">3</td>
+                            <td class="px-6 py-4 text-center">12 - 15</td>
+                            <td class="px-6 py-4 text-right text-slate-400">90s</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 font-semibold">Walking Lunges</td>
+                            <td class="px-6 py-4 text-center">3</td>
+                            <td class="px-6 py-4 text-center">12 / leg</td>
+                            <td class="px-6 py-4 text-right text-slate-400">90s</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 font-semibold">Hanging Leg Raises</td>
+                            <td class="px-6 py-4 text-center">3</td>
+                            <td class="px-6 py-4 text-center">AMRAP</td>
+                            <td class="px-6 py-4 text-right text-slate-400">60s</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Progression Strategy -->
+        <section id="progression" class="mb-20 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+                <h3 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-chart-line text-red-500 mr-3"></i> Double Progression
+                </h3>
+                <div class="space-y-6">
+                    <div class="flex items-start">
+                        <div class="bg-red-600/20 text-red-500 h-8 w-8 rounded-full flex items-center justify-center font-bold mr-4 flex-shrink-0">1</div>
+                        <p class="text-slate-300">Choose a weight you can perform for the lower bound of the rep range.</p>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-red-600/20 text-red-500 h-8 w-8 rounded-full flex items-center justify-center font-bold mr-4 flex-shrink-0">2</div>
+                        <p class="text-slate-300">Aim to add 1 rep each session while maintaining technical excellence.</p>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-red-600/20 text-red-500 h-8 w-8 rounded-full flex items-center justify-center font-bold mr-4 flex-shrink-0">3</div>
+                        <p class="text-slate-300">Once you hit the rep ceiling for all sets, increase the load by 2.5kg.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-900 p-8 rounded-3xl border border-slate-800 shadow-2xl">
+                <h4 class="text-lg font-bold mb-4 uppercase tracking-tighter">GRIND Logic Output</h4>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                        <span class="text-slate-500">Current Phase</span>
+                        <span class="text-white font-mono">Hypertrophy Block 1</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                        <span class="text-slate-500">Target Volume Increase</span>
+                        <span class="text-white font-mono">+5% / Week</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                        <span class="text-slate-500">Squat Target (6mo)</span>
+                        <span class="text-white font-mono">1.5x BW</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 py-12 border-t border-slate-800 mt-20">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-xl font-black mb-4">G R I N D</h1>
+            <p class="text-slate-500 text-sm">Built for engineers who don't compromise. © 2026</p>
+        </div>
+    </footer>
+
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabContent, tabBtns;
+            tabContent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabContent.length; i++) {
+                tabContent[i].classList.remove("active");
+            }
+            tabBtns = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tabBtns.length; i++) {
+                tabBtns[i].classList.remove("active");
+            }
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+    </script>
+</body>
+</html>

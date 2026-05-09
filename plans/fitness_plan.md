@@ -1,11 +1,11 @@
 # GRIND: High-Performance Fitness Plan for Engineers
 
-## 1. Executive Summary
+## 📋 1. Executive Summary
 This plan is designed for Abdulaziz, a 24-year-old Computer Engineering graduate. It optimizes for time efficiency, data-driven progression, and a high-stress schedule (job searching and freelance work). The program utilizes an Upper/Lower split to maximize muscle protein synthesis while keeping daily gym sessions under 60 minutes.
 
 ---
 
-## 2. Weekly Structure: The "Deep Work" Split
+## 🗓️ 2. Weekly Structure: The "Deep Work" Split
 This 4-day split ensures you hit every major muscle group twice per week.
 
 | Day | Workout Type | Focus |
@@ -20,7 +20,7 @@ This 4-day split ensures you hit every major muscle group twice per week.
 
 ---
 
-## 3. The Workouts
+## 🏋️ 3. The Workouts
 
 ### Upper A: Power (Monday)
 *Goal: Move heavy weight with perfect form.*
@@ -66,7 +66,7 @@ This 4-day split ensures you hit every major muscle group twice per week.
 
 ---
 
-## 4. Progression Strategy: The Double Progression Model
+## 📈 4. Progression Strategy: The Double Progression Model
 Since you built GRIND for data tracking, implement this logic:
 
 1.  **Fixed Weight:** Start with a weight where you can barely hit the bottom of the rep range (e.g., 5 reps on Bench).
@@ -76,14 +76,14 @@ Since you built GRIND for data tracking, implement this logic:
 
 ---
 
-## 5. Time-Efficiency Hacks for Busy Professionals
+## ⚡ 5. Time-Efficiency Hacks for Busy Professionals
 *   **Timed Rest:** Use your app's timer. Do not exceed 3 minutes for power lifts or 90s for hypertrophy.
 *   **Acclimation Sets:** Don't waste time on endless warm-up sets. Perform 1 set at 50% working weight and 1 set at 75%, then jump into your first working set.
 *   **Antagonistic Supersets:** On Thursday/Friday, if the gym is empty, pair Chest/Back movements to save 15-20 minutes.
 
 ---
 
-## 6. Measurable Success Metrics (6-Month Targets)
+## 🎯 6. Measurable Success Metrics (6-Month Targets)
 *   **Strength Standards:**
     *   Squat: 1.5x Bodyweight
     *   Bench: 1.2x Bodyweight
