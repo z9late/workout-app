@@ -1,0 +1,3 @@
+## 2025-05-14 - Accessible Tab Pattern for Tailwind/Vanilla JS
+**Learning:** For projects using vanilla JavaScript and Tailwind CSS without a component library, implementing the WAI-ARIA Tab pattern (roles, aria-selected, aria-controls) combined with a keyboard event listener for arrow-key navigation significantly enhances accessibility and provides a "native" feel to custom UI components.
+**Action:** Always include `role="tablist"`, `role="tab"`, and `role="tabpanel"` along with keyboard focus rings (`focus:ring-2`) when building tabbed interfaces to ensure they are usable by keyboard and screen reader users.
