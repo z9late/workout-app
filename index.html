@@ -85,15 +85,15 @@
             </div>
 
             <!-- Tab Buttons -->
-            <div class="flex space-x-8 border-b border-slate-800 mb-8 overflow-x-auto whitespace-nowrap pb-1">
-                <button onclick="openTab(event, 'upperA')" class="tab-btn active px-4 py-2 font-bold transition uppercase text-sm">Upper A</button>
-                <button onclick="openTab(event, 'lowerA')" class="tab-btn px-4 py-2 font-bold transition uppercase text-sm">Lower A</button>
-                <button onclick="openTab(event, 'upperB')" class="tab-btn px-4 py-2 font-bold transition uppercase text-sm">Upper B</button>
-                <button onclick="openTab(event, 'lowerB')" class="tab-btn px-4 py-2 font-bold transition uppercase text-sm">Lower B</button>
+            <div role="tablist" class="flex space-x-8 border-b border-slate-800 mb-8 overflow-x-auto whitespace-nowrap pb-1">
+                <button id="tab-upperA" role="tab" aria-selected="true" aria-controls="upperA" tabindex="0" onclick="openTab(event, 'upperA')" class="tab-btn active px-4 py-2 font-bold transition uppercase text-sm">Upper A</button>
+                <button id="tab-lowerA" role="tab" aria-selected="false" aria-controls="lowerA" tabindex="-1" onclick="openTab(event, 'lowerA')" class="tab-btn px-4 py-2 font-bold transition uppercase text-sm">Lower A</button>
+                <button id="tab-upperB" role="tab" aria-selected="false" aria-controls="upperB" tabindex="-1" onclick="openTab(event, 'upperB')" class="tab-btn px-4 py-2 font-bold transition uppercase text-sm">Upper B</button>
+                <button id="tab-lowerB" role="tab" aria-selected="false" aria-controls="lowerB" tabindex="-1" onclick="openTab(event, 'lowerB')" class="tab-btn px-4 py-2 font-bold transition uppercase text-sm">Lower B</button>
             </div>
 
             <!-- Tab Content: Upper A -->
-            <div id="upperA" class="tab-content active bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
+            <div id="upperA" role="tabpanel" aria-labelledby="tab-upperA" class="tab-content active bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
                 <table class="w-full text-left">
                     <thead class="bg-slate-800 text-slate-400 text-xs uppercase tracking-widest">
                         <tr>
@@ -133,7 +133,7 @@
             </div>
 
             <!-- Tab Content: Lower A -->
-            <div id="lowerA" class="tab-content bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
+            <div id="lowerA" role="tabpanel" aria-labelledby="tab-lowerA" class="tab-content bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
                 <table class="w-full text-left">
                     <thead class="bg-slate-800 text-slate-400 text-xs uppercase tracking-widest">
                         <tr>
@@ -173,7 +173,7 @@
             </div>
 
             <!-- Tab Content: Upper B -->
-            <div id="upperB" class="tab-content bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
+            <div id="upperB" role="tabpanel" aria-labelledby="tab-upperB" class="tab-content bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
                 <table class="w-full text-left">
                     <thead class="bg-slate-800 text-slate-400 text-xs uppercase tracking-widest">
                         <tr>
@@ -213,7 +213,7 @@
             </div>
 
             <!-- Tab Content: Lower B -->
-            <div id="lowerB" class="tab-content bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
+            <div id="lowerB" role="tabpanel" aria-labelledby="tab-lowerB" class="tab-content bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
                 <table class="w-full text-left">
                     <thead class="bg-slate-800 text-slate-400 text-xs uppercase tracking-widest">
                         <tr>
@@ -312,10 +312,44 @@
             tabBtns = document.getElementsByClassName("tab-btn");
             for (i = 0; i < tabBtns.length; i++) {
                 tabBtns[i].classList.remove("active");
+                tabBtns[i].setAttribute('aria-selected', 'false');
+                tabBtns[i].setAttribute('tabindex', '-1');
             }
             document.getElementById(tabName).classList.add("active");
             evt.currentTarget.classList.add("active");
+            evt.currentTarget.setAttribute('aria-selected', 'true');
+            evt.currentTarget.setAttribute('tabindex', '0');
         }
+
+        // Keyboard navigation for tabs
+        const tabList = document.querySelector('[role="tablist"]');
+        const tabs = tabList.querySelectorAll('[role="tab"]');
+
+        tabList.addEventListener('keydown', e => {
+            let tabFocus = 0;
+            for (let i = 0; i < tabs.length; i++) {
+                if (tabs[i] === document.activeElement) {
+                    tabFocus = i;
+                    break;
+                }
+            }
+
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                tabs[tabFocus].setAttribute('tabindex', -1);
+                if (e.key === 'ArrowRight') {
+                    tabFocus++;
+                    if (tabFocus >= tabs.length) tabFocus = 0;
+                } else if (e.key === 'ArrowLeft') {
+                    tabFocus--;
+                    if (tabFocus < 0) tabFocus = tabs.length - 1;
+                }
+
+                tabs[tabFocus].setAttribute('tabindex', 0);
+                tabs[tabFocus].focus();
+                // Optional: Automatically open tab on focus
+                // tabs[tabFocus].click();
+            }
+        });
     </script>
 </body>
 </html>
