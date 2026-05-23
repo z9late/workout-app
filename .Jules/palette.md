@@ -1,0 +1,3 @@
+## 2026-05-23 - ARIA Tabs and Keyboard Navigation
+**Learning:** In a static HTML project without a UI framework, implementing a fully accessible tabbed interface requires manual synchronization of ARIA roles (`tablist`, `tab`, `tabpanel`), state attributes (`aria-selected`, `tabindex`), and a `keydown` listener for standard navigation (Arrow keys, Home, End). The "roving tabindex" pattern ensures that only one tab is focusable at a time, which is the expected behavior for keyboard users.
+**Action:** Always verify that interactive components like tabs have a single tab stop and that state changes are reflected in both CSS classes and ARIA attributes. Use `:focus-visible` to provide clear feedback for keyboard users without affecting mouse users.
