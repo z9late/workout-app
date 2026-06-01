@@ -1,0 +1,3 @@
+## 2026-06-01 - Accessible Tab Navigation with Roving Tabindex
+**Learning:** Implementing a "single tab stop" pattern for tab collections significantly improves keyboard navigation efficiency. By using `tabindex="0"` for the active tab and `tabindex="-1"` for inactive ones, users can skip the entire collection with a single Tab press or explore it using Arrow keys, Home, and End. This aligns with W3C WAI-ARIA best practices.
+**Action:** Always implement the roving tabindex pattern for tabbed interfaces and other collection-based UI components to ensure high accessibility and smooth UX for keyboard and screen reader users. Use Tailwind's `focus-visible` classes to provide high-contrast focus indicators without cluttering the visual UI for mouse users.
