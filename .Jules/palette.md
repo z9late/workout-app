@@ -1,0 +1,3 @@
+## 2026-05-20 - Accessible Roving Tabindex for Workout Modules
+**Learning:** Implementing the 'single tab stop' pattern for collection elements (like tabs) significantly improves the experience for keyboard users by reducing the number of Tab presses required to bypass the collection. This is achieved using `tabindex="0"` for the active item and `tabindex="-1"` for inactive ones, combined with a 'keydown' listener for arrow navigation.
+**Action:** Always implement roving tabindex for custom tab components and other collection-based UI elements in this repository to ensure high-quality keyboard accessibility.
