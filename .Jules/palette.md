@@ -1,0 +1,3 @@
+## 2026-06-08 - Enhanced Tab Accessibility & Roving Tabindex
+**Learning:** Implementing the roving tabindex pattern in a static HTML environment requires manual synchronization of `tabindex` and `aria-selected` attributes via JavaScript. This pattern, combined with `focus-visible` ring styles, significantly improves keyboard ergonomics by allowing users to navigate through collections with arrow keys while reducing the number of Tab stops.
+**Action:** Always implement ArrowLeft/ArrowRight and Home/End key listeners with `e.preventDefault()` for tabbed interfaces to meet WAI-ARIA standards. Use high-contrast `focus-visible` rings with `rounded` and `outline-none` to ensure visible focus without affecting mouse users.
