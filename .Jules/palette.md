@@ -1,0 +1,3 @@
+## 2026-06-29 - [Accessibility] WAI-ARIA Tab Pattern Implementation
+**Learning:** The initial tabbed interface for workout modules was inaccessible to screen readers and keyboard users (no roles, no keyboard nav, no focus indicators). Implementing the WAI-ARIA Tabs pattern significantly improves accessibility but requires careful synchronization between `aria-selected`, `tabindex`, and `hidden` attributes across both tab buttons and panels.
+**Action:** Always implement roving tabindex for tab lists and ensure `focus-visible` rings are provided for all interactive elements to support keyboard-only users.
