@@ -1,0 +1,3 @@
+## 2026-05-15 - Accessible Tab Navigation with Roving Tabindex
+**Learning:** For dark-themed dashboards like GRIND, standard focus states are often invisible. Combining `focus-visible:ring-white` with `focus-visible:ring-offset-slate-950` ensures that focus indicators are prominent without clashing with the UI. Additionally, synchronizing `aria-selected`, `tabindex`, and the `hidden` attribute is critical for screen readers to correctly ignore inactive panels.
+**Action:** Always implement the 'single tab stop' pattern for collection elements (tabs, lists) by using a roving tabindex (0 for active, -1 for inactive) and a dedicated keydown listener for arrow keys.
