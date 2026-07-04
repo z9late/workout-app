@@ -85,11 +85,11 @@
             </div>
 
             <!-- Tab Buttons -->
-            <div class="flex space-x-8 border-b border-slate-800 mb-8 overflow-x-auto whitespace-nowrap pb-1">
-                <button onclick="openTab(event, 'upperA')" class="tab-btn active px-4 py-2 font-bold transition uppercase text-sm">Upper A</button>
-                <button onclick="openTab(event, 'lowerA')" class="tab-btn px-4 py-2 font-bold transition uppercase text-sm">Lower A</button>
-                <button onclick="openTab(event, 'upperB')" class="tab-btn px-4 py-2 font-bold transition uppercase text-sm">Upper B</button>
-                <button onclick="openTab(event, 'lowerB')" class="tab-btn px-4 py-2 font-bold transition uppercase text-sm">Lower B</button>
+            <div role="tablist" aria-label="Workout Modules" class="flex space-x-8 border-b border-slate-800 mb-8 overflow-x-auto whitespace-nowrap pb-1">
+                <button id="t-uA" role="tab" aria-selected="true" aria-controls="upperA" tabindex="0" onclick="openTab(event, 'upperA')" class="tab-btn active px-4 py-2 font-bold transition uppercase text-sm focus-visible:ring-2 focus-visible:ring-white rounded-t">Upper A</button>
+                <button id="t-lA" role="tab" aria-selected="false" aria-controls="lowerA" tabindex="-1" onclick="openTab(event, 'lowerA')" class="tab-btn px-4 py-2 font-bold transition uppercase text-sm focus-visible:ring-2 focus-visible:ring-white rounded-t">Lower A</button>
+                <button id="t-uB" role="tab" aria-selected="false" aria-controls="upperB" tabindex="-1" onclick="openTab(event, 'upperB')" class="tab-btn px-4 py-2 font-bold transition uppercase text-sm focus-visible:ring-2 focus-visible:ring-white rounded-t">Upper B</button>
+                <button id="t-lB" role="tab" aria-selected="false" aria-controls="lowerB" tabindex="-1" onclick="openTab(event, 'lowerB')" class="tab-btn px-4 py-2 font-bold transition uppercase text-sm focus-visible:ring-2 focus-visible:ring-white rounded-t">Lower B</button>
             </div>
 
             <!-- Tab Content: Upper A -->
@@ -303,19 +303,24 @@
     </footer>
 
     <script>
-        function openTab(evt, tabName) {
-            var i, tabContent, tabBtns;
-            tabContent = document.getElementsByClassName("tab-content");
-            for (i = 0; i < tabContent.length; i++) {
-                tabContent[i].classList.remove("active");
-            }
-            tabBtns = document.getElementsByClassName("tab-btn");
-            for (i = 0; i < tabBtns.length; i++) {
-                tabBtns[i].classList.remove("active");
-            }
-            document.getElementById(tabName).classList.add("active");
-            evt.currentTarget.classList.add("active");
+        function openTab(e, id) {
+            const ps = document.querySelectorAll('.tab-content'), bs = document.querySelectorAll('.tab-btn');
+            ps.forEach(p => { p.classList.remove('active'); p.hidden = (p.id !== id); if(p.id === id) p.classList.add('active'); });
+            bs.forEach(b => {
+                const sel = b.getAttribute('aria-controls') === id;
+                b.classList.toggle('active', sel); b.setAttribute('aria-selected', sel); b.setAttribute('tabindex', sel ? '0' : '-1');
+            });
         }
+        document.querySelector('[role="tablist"]').addEventListener('keydown', e => {
+            const ts = document.querySelectorAll('[role="tab"]'); let i = Array.from(ts).indexOf(document.activeElement);
+            if (i === -1) return;
+            if (e.key === 'ArrowRight') i = (i + 1) % ts.length;
+            else if (e.key === 'ArrowLeft') i = (i - 1 + ts.length) % ts.length;
+            else if (e.key === 'Home') i = 0;
+            else if (e.key === 'End') i = ts.length - 1;
+            else return;
+            e.preventDefault(); ts[i].focus(); ts[i].click();
+        });
     </script>
 </body>
 </html>
