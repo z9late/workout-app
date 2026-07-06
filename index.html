@@ -1,321 +1,963 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GRIND | High-Performance Fitness Plan</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .tab-btn.active { border-bottom: 2px solid #ef4444; color: #ef4444; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#09090B">
+<title>GRIND — Workout Tracker</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: { extend: {
+    colors: {
+      bg: '#09090B', surface: '#121215', surface2: '#1A1A1F', line: '#26262C',
+      brand: '#F97316', brand2: '#FB923C', pos: '#22C55E', neg: '#EF4444', mut: '#A1A1AA'
+    },
+    fontFamily: {
+      display: ['"Barlow Condensed"', 'sans-serif'],
+      body: ['Barlow', 'sans-serif']
+    }
+  } }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap');
+html { background: #09090B; }
+body { font-family: 'Barlow', sans-serif; -webkit-tap-highlight-color: transparent; }
+.tabular { font-variant-numeric: tabular-nums; }
+input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
+:focus-visible { outline: 2px solid #F97316; outline-offset: 2px; border-radius: 4px; }
+* { touch-action: manipulation; }
+.card { background: #121215; border: 1px solid #26262C; border-radius: 16px; }
+.press { transition: transform 150ms ease-out, opacity 150ms ease-out, background-color 150ms ease-out, border-color 150ms ease-out; cursor: pointer; }
+.press:active { transform: scale(0.97); }
+.fade-in { animation: fadeIn 220ms ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.slide-up { animation: slideUp 260ms cubic-bezier(.2,.9,.3,1); }
+@keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+@keyframes pulseGlow { 0%,100% { box-shadow: 0 0 0 0 rgba(249,115,22,.35);} 50% { box-shadow: 0 0 0 8px rgba(249,115,22,0);} }
+.rest-glow { animation: pulseGlow 2s infinite; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+details > summary { list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+details[open] .chev { transform: rotate(180deg); }
+.chev { transition: transform 200ms ease-out; }
+select, input[type=text], input[type=number] { color-scheme: dark; }
+</style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen">
+<body class="bg-bg text-zinc-50 min-h-screen font-body">
 
-    <!-- Header -->
-    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-extrabold tracking-tighter text-white">G R I N D</h1>
-            <div class="hidden md:flex space-x-6 text-sm font-semibold uppercase tracking-wider">
-                <a href="#schedule" class="hover:text-red-500 transition">Schedule</a>
-                <a href="#workouts" class="hover:text-red-500 transition">Workouts</a>
-                <a href="#progression" class="hover:text-red-500 transition">Progression</a>
-            </div>
-            <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-bold transition">LOG SESSION</button>
-        </div>
-    </header>
+<!-- App header -->
+<header class="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur-md">
+  <div class="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
+    <h1 class="font-display text-3xl font-bold tracking-tight text-white select-none">GRIND<span class="text-brand">.</span></h1>
+    <div class="flex items-center gap-2">
+      <div id="streakChip" class="flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-sm font-semibold text-mut"></div>
+      <nav class="hidden md:flex items-center gap-1 ml-2" aria-label="Primary">
+        <button data-nav="home"     class="navbtn press rounded-lg px-3 py-2 text-sm font-semibold text-mut hover:text-white">Home</button>
+        <button data-nav="routines" class="navbtn press rounded-lg px-3 py-2 text-sm font-semibold text-mut hover:text-white">Workout</button>
+        <button data-nav="history"  class="navbtn press rounded-lg px-3 py-2 text-sm font-semibold text-mut hover:text-white">History</button>
+        <button data-nav="progress" class="navbtn press rounded-lg px-3 py-2 text-sm font-semibold text-mut hover:text-white">Progress</button>
+      </nav>
+    </div>
+  </div>
+</header>
 
-    <main class="container mx-auto px-4 py-12 max-w-5xl">
+<main id="view" class="mx-auto max-w-3xl px-4 pb-28 pt-6 md:pb-12"></main>
 
-        <!-- Hero Section -->
-        <section class="mb-20 text-center">
-            <span class="text-red-500 font-bold tracking-widest uppercase text-xs">For Abdulaziz</span>
-            <h2 class="text-5xl md:text-7xl font-black mt-4 mb-6">OPTIMIZED PERFORMANCE</h2>
-            <p class="text-slate-400 text-lg max-w-2xl mx-auto">
-                A data-driven engineering approach to fitness. 4 sessions per week, sub-60 minutes, maximized for hypertrophy and power.
-            </p>
-        </section>
+<!-- Bottom nav (mobile) -->
+<nav class="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg/95 backdrop-blur-md md:hidden" style="padding-bottom: env(safe-area-inset-bottom);" aria-label="Primary">
+  <div class="mx-auto grid max-w-3xl grid-cols-4">
+    <button data-nav="home"     class="navbtn press flex min-h-[56px] flex-col items-center justify-center gap-0.5 text-[11px] font-semibold text-mut"><span data-ic="home"></span>Home</button>
+    <button data-nav="routines" class="navbtn press flex min-h-[56px] flex-col items-center justify-center gap-0.5 text-[11px] font-semibold text-mut"><span data-ic="dumbbell"></span>Workout</button>
+    <button data-nav="history"  class="navbtn press flex min-h-[56px] flex-col items-center justify-center gap-0.5 text-[11px] font-semibold text-mut"><span data-ic="clock"></span>History</button>
+    <button data-nav="progress" class="navbtn press flex min-h-[56px] flex-col items-center justify-center gap-0.5 text-[11px] font-semibold text-mut"><span data-ic="chart"></span>Progress</button>
+  </div>
+</nav>
 
-        <!-- Weekly Structure -->
-        <section id="schedule" class="mb-20">
-            <h3 class="text-2xl font-bold mb-8 flex items-center">
-                <i class="fas fa-calendar-alt text-red-500 mr-3"></i> Weekly Structure
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
-                    <span class="text-slate-500 text-sm font-bold uppercase">Monday</span>
-                    <h4 class="text-xl font-bold mt-2">Upper A</h4>
-                    <p class="text-red-500 text-xs font-bold uppercase mt-1">Power Focus</p>
-                </div>
-                <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
-                    <span class="text-slate-500 text-sm font-bold uppercase">Tuesday</span>
-                    <h4 class="text-xl font-bold mt-2">Lower A</h4>
-                    <p class="text-red-500 text-xs font-bold uppercase mt-1">Power Focus</p>
-                </div>
-                <div class="bg-slate-900/30 p-6 rounded-xl border border-slate-800/50 flex flex-col justify-center">
-                    <span class="text-slate-500 text-sm font-bold uppercase">Wednesday</span>
-                    <h4 class="text-xl font-bold mt-2 opacity-50 italic">Deep Work</h4>
-                </div>
-                <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
-                    <span class="text-slate-500 text-sm font-bold uppercase">Thursday</span>
-                    <h4 class="text-xl font-bold mt-2">Upper B</h4>
-                    <p class="text-red-500 text-xs font-bold uppercase mt-1">Hypertrophy</p>
-                </div>
-                <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
-                    <span class="text-slate-500 text-sm font-bold uppercase">Friday</span>
-                    <h4 class="text-xl font-bold mt-2">Lower B</h4>
-                    <p class="text-red-500 text-xs font-bold uppercase mt-1">Hypertrophy</p>
-                </div>
-                <div class="col-span-2 bg-slate-900/30 p-6 rounded-xl border border-slate-800/50 flex items-center justify-center">
-                    <h4 class="text-xl font-bold opacity-50 italic">Weekend: Recovery & Planning</h4>
-                </div>
-            </div>
-        </section>
+<!-- Active session overlay -->
+<div id="sessionOverlay" class="fixed inset-0 z-50 hidden overflow-y-auto bg-bg"></div>
 
-        <!-- Workouts Tabs -->
-        <section id="workouts" class="mb-20">
-            <div class="flex justify-between items-end mb-8">
-                <h3 class="text-2xl font-bold flex items-center">
-                    <i class="fas fa-dumbbell text-red-500 mr-3"></i> Workout Modules
-                </h3>
-            </div>
+<!-- Modal + toast roots -->
+<div id="modalRoot"></div>
+<div id="toastRoot" class="pointer-events-none fixed inset-x-0 top-16 z-[70] flex flex-col items-center gap-2 px-4" aria-live="polite"></div>
 
-            <!-- Tab Buttons -->
-            <div class="flex space-x-8 border-b border-slate-800 mb-8 overflow-x-auto whitespace-nowrap pb-1">
-                <button onclick="openTab(event, 'upperA')" class="tab-btn active px-4 py-2 font-bold transition uppercase text-sm">Upper A</button>
-                <button onclick="openTab(event, 'lowerA')" class="tab-btn px-4 py-2 font-bold transition uppercase text-sm">Lower A</button>
-                <button onclick="openTab(event, 'upperB')" class="tab-btn px-4 py-2 font-bold transition uppercase text-sm">Upper B</button>
-                <button onclick="openTab(event, 'lowerB')" class="tab-btn px-4 py-2 font-bold transition uppercase text-sm">Lower B</button>
-            </div>
+<script>
+'use strict';
+/* ================= Icons (inline SVG, stroke-based) ================= */
+const ICONS = {
+  home:     '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/>',
+  dumbbell: '<path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/>',
+  clock:    '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  chart:    '<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 4-6"/>',
+  flame:    '<path d="M12 3s5 4.7 5 9a5 5 0 0 1-10 0c0-1.6.6-3.1 1.6-4.6C9.4 8.6 12 7.5 12 3z"/>',
+  plus:     '<path d="M12 5v14M5 12h14"/>',
+  check:    '<path d="M4 12.5l5 5L20 6.5"/>',
+  x:        '<path d="M6 6l12 12M18 6L6 18"/>',
+  trophy:   '<path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5c0 2.5 1.5 4 3 4M16 6h3c0 2.5-1.5 4-3 4M12 13v3M8 21h8M10 21v-3h4v3"/>',
+  timer:    '<circle cx="12" cy="13" r="8"/><path d="M12 10v4M9 2h6"/>',
+  chevdown: '<path d="M6 9l6 6 6-6"/>',
+  trash:    '<path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13M10 11v6M14 11v6"/>',
+  pencil:   '<path d="M4 20l4-1L20 7l-3-3L5 16l-1 4z"/>',
+  play:     '<path d="M8 5v14l11-7z"/>',
+  minus:    '<path d="M5 12h14"/>',
+  calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/>',
+  bolt:     '<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>',
+  search:   '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+  chevright:'<path d="M9 6l6 6-6 6"/>'
+};
+function icon(name, cls) {
+  return '<svg class="' + (cls || 'h-5 w-5') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[name] + '</svg>';
+}
+document.querySelectorAll('[data-ic]').forEach(el => el.innerHTML = icon(el.dataset.ic, 'h-5 w-5'));
 
-            <!-- Tab Content: Upper A -->
-            <div id="upperA" class="tab-content active bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-800 text-slate-400 text-xs uppercase tracking-widest">
-                        <tr>
-                            <th class="px-6 py-4">Exercise</th>
-                            <th class="px-6 py-4 text-center">Sets</th>
-                            <th class="px-6 py-4 text-center">Reps</th>
-                            <th class="px-6 py-4 text-right">Rest</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800">
-                        <tr>
-                            <td class="px-6 py-4 font-semibold">Flat Barbell Bench Press</td>
-                            <td class="px-6 py-4 text-center">3</td>
-                            <td class="px-6 py-4 text-center">5 - 8</td>
-                            <td class="px-6 py-4 text-right text-slate-400">180s</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 font-semibold">Weighted Pull-Ups</td>
-                            <td class="px-6 py-4 text-center">3</td>
-                            <td class="px-6 py-4 text-center">6 - 8</td>
-                            <td class="px-6 py-4 text-right text-slate-400">120s</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 font-semibold">Overhead Press (Barbell)</td>
-                            <td class="px-6 py-4 text-center">3</td>
-                            <td class="px-6 py-4 text-center">8 - 10</td>
-                            <td class="px-6 py-4 text-right text-slate-400">120s</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 font-semibold">Barbell Rows</td>
-                            <td class="px-6 py-4 text-center">3</td>
-                            <td class="px-6 py-4 text-center">8 - 10</td>
-                            <td class="px-6 py-4 text-right text-slate-400">120s</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+/* ================= Exercise library ================= */
+const LIB = [
+  ['Flat Barbell Bench Press','Chest'],['Incline Dumbbell Bench','Chest'],['Dips','Chest'],['Cable Fly','Chest'],['Push-Ups','Chest'],
+  ['Weighted Pull-Ups','Back'],['Barbell Rows','Back'],['Lat Pulldowns','Back'],['Seated Cable Row','Back'],['Deadlift','Back'],
+  ['Overhead Press (Barbell)','Shoulders'],['Lateral Raises','Shoulders'],['Face Pulls','Shoulders'],['Dumbbell Shoulder Press','Shoulders'],['Rear Delt Fly','Shoulders'],
+  ['Barbell Curl','Arms'],['Dumbbell Curl','Arms'],['Hammer Curl','Arms'],['Triceps Pushdown','Arms'],['Skullcrushers','Arms'],
+  ['Back Squat','Quads'],['Front Squat','Quads'],['Leg Press','Quads'],['Leg Extensions','Quads'],['Walking Lunges','Quads'],['Bulgarian Split Squat','Quads'],
+  ['Romanian Deadlift','Hamstrings'],['Leg Curls','Hamstrings'],['Good Mornings','Hamstrings'],['Hip Thrust','Glutes'],
+  ['Calf Raises','Calves'],['Seated Calf Raises','Calves'],
+  ['Hanging Leg Raises','Core'],['Cable Crunch','Core'],['Plank','Core'],['Ab Wheel Rollout','Core']
+];
+const MUSCLE_OF = Object.fromEntries(LIB);
+const muscleOf = n => MUSCLE_OF[n] || 'Other';
 
-            <!-- Tab Content: Lower A -->
-            <div id="lowerA" class="tab-content bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-800 text-slate-400 text-xs uppercase tracking-widest">
-                        <tr>
-                            <th class="px-6 py-4">Exercise</th>
-                            <th class="px-6 py-4 text-center">Sets</th>
-                            <th class="px-6 py-4 text-center">Reps</th>
-                            <th class="px-6 py-4 text-right">Rest</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800">
-                        <tr>
-                            <td class="px-6 py-4 font-semibold">Back Squat</td>
-                            <td class="px-6 py-4 text-center">3</td>
-                            <td class="px-6 py-4 text-center">5 - 8</td>
-                            <td class="px-6 py-4 text-right text-slate-400">180s</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 font-semibold">Romanian Deadlift</td>
-                            <td class="px-6 py-4 text-center">3</td>
-                            <td class="px-6 py-4 text-center">8 - 10</td>
-                            <td class="px-6 py-4 text-right text-slate-400">120s</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 font-semibold">Leg Press</td>
-                            <td class="px-6 py-4 text-center">3</td>
-                            <td class="px-6 py-4 text-center">10 - 12</td>
-                            <td class="px-6 py-4 text-right text-slate-400">90s</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 font-semibold">Calf Raises</td>
-                            <td class="px-6 py-4 text-center">4</td>
-                            <td class="px-6 py-4 text-center">12 - 15</td>
-                            <td class="px-6 py-4 text-right text-slate-400">60s</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+/* ================= Seed routines (from the GRIND plan) ================= */
+function ex(name, sets, repMin, repMax, rest) { return { name, sets, repMin, repMax, rest }; }
+const SEED_ROUTINES = [
+  { id: 'upperA', name: 'Upper A', focus: 'Power Focus', exercises: [
+    ex('Flat Barbell Bench Press', 3, 5, 8, 180), ex('Weighted Pull-Ups', 3, 6, 8, 120),
+    ex('Overhead Press (Barbell)', 3, 8, 10, 120), ex('Barbell Rows', 3, 8, 10, 120) ] },
+  { id: 'lowerA', name: 'Lower A', focus: 'Power Focus', exercises: [
+    ex('Back Squat', 3, 5, 8, 180), ex('Romanian Deadlift', 3, 8, 10, 120),
+    ex('Leg Press', 3, 10, 12, 90), ex('Calf Raises', 4, 12, 15, 60) ] },
+  { id: 'upperB', name: 'Upper B', focus: 'Hypertrophy', exercises: [
+    ex('Incline Dumbbell Bench', 3, 10, 12, 90), ex('Lat Pulldowns', 3, 10, 12, 90),
+    ex('Lateral Raises', 3, 15, 20, 60), ex('Face Pulls', 3, 15, 20, 60) ] },
+  { id: 'lowerB', name: 'Lower B', focus: 'Hypertrophy', exercises: [
+    ex('Leg Extensions', 3, 12, 15, 90), ex('Leg Curls', 3, 12, 15, 90),
+    ex('Walking Lunges', 3, 12, 12, 90), ex('Hanging Leg Raises', 3, 10, 15, 60) ] }
+];
+const CYCLE = ['Upper A', 'Lower A', 'Upper B', 'Lower B'];
 
-            <!-- Tab Content: Upper B -->
-            <div id="upperB" class="tab-content bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-800 text-slate-400 text-xs uppercase tracking-widest">
-                        <tr>
-                            <th class="px-6 py-4">Exercise</th>
-                            <th class="px-6 py-4 text-center">Sets</th>
-                            <th class="px-6 py-4 text-center">Reps</th>
-                            <th class="px-6 py-4 text-right">Rest</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800">
-                        <tr>
-                            <td class="px-6 py-4 font-semibold">Incline Dumbbell Bench</td>
-                            <td class="px-6 py-4 text-center">3</td>
-                            <td class="px-6 py-4 text-center">10 - 12</td>
-                            <td class="px-6 py-4 text-right text-slate-400">90s</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 font-semibold">Lat Pulldowns</td>
-                            <td class="px-6 py-4 text-center">3</td>
-                            <td class="px-6 py-4 text-center">10 - 12</td>
-                            <td class="px-6 py-4 text-right text-slate-400">90s</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 font-semibold">Lateral Raises</td>
-                            <td class="px-6 py-4 text-center">3</td>
-                            <td class="px-6 py-4 text-center">15 - 20</td>
-                            <td class="px-6 py-4 text-right text-slate-400">60s</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 font-semibold">Face Pulls</td>
-                            <td class="px-6 py-4 text-center">3</td>
-                            <td class="px-6 py-4 text-center">15 - 20</td>
-                            <td class="px-6 py-4 text-right text-slate-400">60s</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+/* ================= State ================= */
+const LS_KEY = 'grind.v1', LS_SESSION = 'grind.session.v1';
+let state = loadState();
+let session = null;          // active workout
+let currentView = 'home';
+let restTimer = null;        // { endAt, total, int }
+let elapsedInt = null;
+let charts = {};
 
-            <!-- Tab Content: Lower B -->
-            <div id="lowerB" class="tab-content bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-800 text-slate-400 text-xs uppercase tracking-widest">
-                        <tr>
-                            <th class="px-6 py-4">Exercise</th>
-                            <th class="px-6 py-4 text-center">Sets</th>
-                            <th class="px-6 py-4 text-center">Reps</th>
-                            <th class="px-6 py-4 text-right">Rest</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800">
-                        <tr>
-                            <td class="px-6 py-4 font-semibold">Leg Extensions</td>
-                            <td class="px-6 py-4 text-center">3</td>
-                            <td class="px-6 py-4 text-center">12 - 15</td>
-                            <td class="px-6 py-4 text-right text-slate-400">90s</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 font-semibold">Leg Curls</td>
-                            <td class="px-6 py-4 text-center">3</td>
-                            <td class="px-6 py-4 text-center">12 - 15</td>
-                            <td class="px-6 py-4 text-right text-slate-400">90s</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 font-semibold">Walking Lunges</td>
-                            <td class="px-6 py-4 text-center">3</td>
-                            <td class="px-6 py-4 text-center">12 / leg</td>
-                            <td class="px-6 py-4 text-right text-slate-400">90s</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 font-semibold">Hanging Leg Raises</td>
-                            <td class="px-6 py-4 text-center">3</td>
-                            <td class="px-6 py-4 text-center">AMRAP</td>
-                            <td class="px-6 py-4 text-right text-slate-400">60s</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+function loadState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return { routines: JSON.parse(JSON.stringify(SEED_ROUTINES)), history: [] };
+}
+function save() { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+function saveSession() {
+  if (session) localStorage.setItem(LS_SESSION, JSON.stringify(session));
+  else localStorage.removeItem(LS_SESSION);
+}
 
-        <!-- Progression Strategy -->
-        <section id="progression" class="mb-20 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div>
-                <h3 class="text-2xl font-bold mb-6 flex items-center">
-                    <i class="fas fa-chart-line text-red-500 mr-3"></i> Double Progression
-                </h3>
-                <div class="space-y-6">
-                    <div class="flex items-start">
-                        <div class="bg-red-600/20 text-red-500 h-8 w-8 rounded-full flex items-center justify-center font-bold mr-4 flex-shrink-0">1</div>
-                        <p class="text-slate-300">Choose a weight you can perform for the lower bound of the rep range.</p>
-                    </div>
-                    <div class="flex items-start">
-                        <div class="bg-red-600/20 text-red-500 h-8 w-8 rounded-full flex items-center justify-center font-bold mr-4 flex-shrink-0">2</div>
-                        <p class="text-slate-300">Aim to add 1 rep each session while maintaining technical excellence.</p>
-                    </div>
-                    <div class="flex items-start">
-                        <div class="bg-red-600/20 text-red-500 h-8 w-8 rounded-full flex items-center justify-center font-bold mr-4 flex-shrink-0">3</div>
-                        <p class="text-slate-300">Once you hit the rep ceiling for all sets, increase the load by 2.5kg.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-slate-900 p-8 rounded-3xl border border-slate-800 shadow-2xl">
-                <h4 class="text-lg font-bold mb-4 uppercase tracking-tighter">GRIND Logic Output</h4>
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                        <span class="text-slate-500">Current Phase</span>
-                        <span class="text-white font-mono">Hypertrophy Block 1</span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                        <span class="text-slate-500">Target Volume Increase</span>
-                        <span class="text-white font-mono">+5% / Week</span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                        <span class="text-slate-500">Squat Target (6mo)</span>
-                        <span class="text-white font-mono">1.5x BW</span>
-                    </div>
-                </div>
-            </div>
-        </section>
+/* ================= Helpers ================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const e1rm = (w, r) => w > 0 && r > 0 ? w * (1 + r / 30) : 0;
+const round1 = n => Math.round(n * 10) / 10;
+function fmtDur(sec) {
+  const m = Math.round(sec / 60);
+  return m >= 60 ? Math.floor(m / 60) + 'h ' + String(m % 60).padStart(2, '0') + 'm' : m + 'm';
+}
+function fmtClock(sec) {
+  sec = Math.max(0, Math.round(sec));
+  return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+}
+function fmtVol(kg) {
+  if (kg >= 10000) return round1(kg / 1000) + 't';
+  return Math.round(kg).toLocaleString() + ' kg';
+}
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+}
+function mondayOf(d) {
+  d = new Date(d); d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return d;
+}
+function weekKey(d) { return mondayOf(d).toISOString().slice(0, 10); }
+function workoutVolume(w) {
+  return w.exercises.reduce((t, e) => t + e.sets.reduce((s, st) => s + (st.done ? (st.weight || 0) * (st.reps || 0) : 0), 0), 0);
+}
+function workoutSets(w) {
+  return w.exercises.reduce((t, e) => t + e.sets.filter(s => s.done).length, 0);
+}
+/* Best e1RM for an exercise across all history */
+function histMax(name) {
+  let m = 0;
+  for (const w of state.history) for (const e of w.exercises) if (e.name === name)
+    for (const s of e.sets) if (s.done) m = Math.max(m, e1rm(s.weight, s.reps));
+  return m;
+}
+/* Done sets from the most recent workout that contains this exercise */
+function lastSetsFor(name) {
+  for (const w of state.history) { // history is newest-first
+    for (const e of w.exercises) if (e.name === name) {
+      const done = e.sets.filter(s => s.done);
+      if (done.length) return done;
+    }
+  }
+  return null;
+}
+function currentStreakWeeks() {
+  const weeks = new Set(state.history.map(w => weekKey(new Date(w.date))));
+  let n = 0, cur = mondayOf(new Date());
+  if (!weeks.has(cur.toISOString().slice(0, 10))) cur.setDate(cur.getDate() - 7); // grace for current week
+  while (weeks.has(cur.toISOString().slice(0, 10))) { n++; cur.setDate(cur.getDate() - 7); }
+  return n;
+}
+function nextRoutine() {
+  const names = state.routines.map(r => r.name);
+  const cycle = CYCLE.filter(n => names.includes(n));
+  if (!cycle.length) return state.routines[0] || null;
+  const last = state.history.find(h => cycle.includes(h.name));
+  const idx = last ? (cycle.indexOf(last.name) + 1) % cycle.length : 0;
+  return state.routines.find(r => r.name === cycle[idx]);
+}
+function toast(msg, kind) {
+  const el = document.createElement('div');
+  el.className = 'fade-in pointer-events-auto rounded-xl border px-4 py-2.5 text-sm font-semibold shadow-xl ' +
+    (kind === 'pr' ? 'border-brand/40 bg-brand/15 text-brand2' :
+     kind === 'ok' ? 'border-pos/40 bg-pos/15 text-pos' : 'border-line bg-surface2 text-zinc-200');
+  el.innerHTML = msg;
+  $('#toastRoot').appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 300ms'; setTimeout(() => el.remove(), 320); }, 3200);
+}
+function beep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.18, 0.36].forEach((t, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = i === 2 ? 1175 : 880; o.type = 'sine';
+      g.gain.setValueAtTime(0.12, ctx.currentTime + t);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.15);
+      o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.16);
+    });
+  } catch (e) {}
+  if (navigator.vibrate) navigator.vibrate([80, 60, 120]);
+}
 
-    </main>
+/* ================= Modals ================= */
+function openModal(html, opts) {
+  opts = opts || {};
+  $('#modalRoot').innerHTML =
+    '<div class="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center" onclick="if(event.target===this)' + (opts.locked ? '' : 'closeModal()') + '">' +
+      '<div class="slide-up w-full max-w-lg rounded-t-2xl border border-line bg-surface p-5 shadow-2xl sm:rounded-2xl max-h-[85vh] overflow-y-auto" role="dialog" aria-modal="true">' + html + '</div>' +
+    '</div>';
+}
+function closeModal() { $('#modalRoot').innerHTML = ''; }
+function confirmDlg(title, body, actionLabel, onYes, danger) {
+  window._confirmYes = () => { closeModal(); onYes(); };
+  openModal(
+    '<h3 class="font-display text-2xl font-bold">' + esc(title) + '</h3>' +
+    '<p class="mt-2 text-sm text-mut">' + esc(body) + '</p>' +
+    '<div class="mt-5 flex gap-3">' +
+      '<button onclick="closeModal()" class="press flex-1 rounded-xl border border-line bg-surface2 py-3 font-semibold min-h-[48px]">Cancel</button>' +
+      '<button onclick="_confirmYes()" class="press flex-1 rounded-xl py-3 font-bold min-h-[48px] ' + (danger ? 'bg-neg text-white' : 'bg-brand text-zinc-950') + '">' + esc(actionLabel) + '</button>' +
+    '</div>');
+}
 
-    <footer class="bg-slate-900 py-12 border-t border-slate-800 mt-20">
-        <div class="container mx-auto px-4 text-center">
-            <h1 class="text-xl font-black mb-4">G R I N D</h1>
-            <p class="text-slate-500 text-sm">Built for engineers who don't compromise. © 2026</p>
-        </div>
-    </footer>
+/* ================= Navigation ================= */
+function navTo(v) {
+  currentView = v;
+  document.querySelectorAll('.navbtn').forEach(b => {
+    const on = b.dataset.nav === v;
+    b.classList.toggle('text-brand', on);
+    b.classList.toggle('text-mut', !on);
+  });
+  Object.values(charts).forEach(c => c.destroy()); charts = {};
+  const r = { home: renderHome, routines: renderRoutines, history: renderHistory, progress: renderProgress }[v];
+  $('#view').innerHTML = '<div class="fade-in">' + r() + '</div>';
+  if (v === 'progress') requestAnimationFrame(drawCharts);
+  renderStreakChip();
+  window.scrollTo({ top: 0 });
+}
+document.querySelectorAll('.navbtn').forEach(b => b.addEventListener('click', () => navTo(b.dataset.nav)));
+function renderStreakChip() {
+  const s = currentStreakWeeks();
+  $('#streakChip').innerHTML = '<span class="' + (s > 0 ? 'text-brand' : 'text-mut') + '">' + icon('flame', 'h-4 w-4') + '</span><span class="tabular ' + (s > 0 ? 'text-white' : '') + '">' + s + ' wk</span>';
+}
 
-    <script>
-        function openTab(evt, tabName) {
-            var i, tabContent, tabBtns;
-            tabContent = document.getElementsByClassName("tab-content");
-            for (i = 0; i < tabContent.length; i++) {
-                tabContent[i].classList.remove("active");
-            }
-            tabBtns = document.getElementsByClassName("tab-btn");
-            for (i = 0; i < tabBtns.length; i++) {
-                tabBtns[i].classList.remove("active");
-            }
-            document.getElementById(tabName).classList.add("active");
-            evt.currentTarget.classList.add("active");
-        }
-    </script>
+/* ================= HOME ================= */
+function renderHome() {
+  const now = new Date();
+  const hr = now.getHours();
+  const greet = hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening';
+  const next = nextRoutine();
+  const monday = mondayOf(now);
+  const weekWorkouts = state.history.filter(w => new Date(w.date) >= monday);
+  const weekVol = weekWorkouts.reduce((t, w) => t + workoutVolume(w), 0);
+  const weekSets = weekWorkouts.reduce((t, w) => t + workoutSets(w), 0);
+  const prCount30 = state.history.filter(w => (now - new Date(w.date)) < 30 * 864e5).reduce((t, w) => t + (w.prs || []).length, 0);
+
+  // week strip
+  const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const strip = dayLabels.map((l, i) => {
+    const d = new Date(monday); d.setDate(d.getDate() + i);
+    const has = state.history.some(w => new Date(w.date).toDateString() === d.toDateString());
+    const isToday = d.toDateString() === now.toDateString();
+    return '<div class="flex flex-col items-center gap-1.5">' +
+      '<span class="text-[11px] font-semibold ' + (isToday ? 'text-brand' : 'text-mut') + '">' + l + '</span>' +
+      '<span class="h-2.5 w-2.5 rounded-full ' + (has ? 'bg-brand' : 'bg-surface2 border border-line') + '"></span></div>';
+  }).join('');
+
+  // recent PRs
+  const recentPRs = [];
+  for (const w of state.history) {
+    for (const name of (w.prs || [])) recentPRs.push({ name, date: w.date });
+    if (recentPRs.length >= 4) break;
+  }
+
+  let html =
+    '<p class="text-sm font-semibold uppercase tracking-widest text-brand">' + greet + ', Abdulaziz</p>' +
+    '<h2 class="font-display mt-1 text-5xl font-bold leading-none">READY TO<br>GRIND?</h2>';
+
+  if (next) {
+    html +=
+      '<div class="card mt-6 p-5">' +
+        '<div class="flex items-center justify-between">' +
+          '<div><p class="text-xs font-bold uppercase tracking-widest text-mut">Next up</p>' +
+          '<h3 class="font-display text-3xl font-bold">' + esc(next.name) + '</h3>' +
+          '<p class="text-xs font-bold uppercase tracking-wider text-brand">' + esc(next.focus || '') + '</p></div>' +
+          '<button onclick="startRoutine(\'' + next.id + '\')" class="press flex min-h-[52px] items-center gap-2 rounded-xl bg-brand px-5 font-bold text-zinc-950">' + icon('play', 'h-5 w-5') + 'Start</button>' +
+        '</div>' +
+        '<p class="mt-3 text-sm text-mut">' + next.exercises.map(e => esc(e.name)).join(' · ') + '</p>' +
+      '</div>';
+  }
+
+  html +=
+    '<div class="card mt-4 flex items-center justify-between p-5">' +
+      '<div class="flex gap-4">' + strip + '</div>' +
+      '<div class="text-right"><p class="tabular font-display text-3xl font-bold">' + weekWorkouts.length + '<span class="text-lg text-mut">/4</span></p>' +
+      '<p class="text-xs font-semibold uppercase tracking-wider text-mut">this week</p></div>' +
+    '</div>' +
+    '<div class="mt-4 grid grid-cols-3 gap-3">' +
+      statTile(fmtVol(weekVol), 'Week volume') + statTile(weekSets, 'Week sets') + statTile(prCount30, 'PRs · 30d') +
+    '</div>';
+
+  if (recentPRs.length) {
+    html += '<h3 class="font-display mt-8 text-2xl font-bold">Recent PRs</h3><div class="mt-3 space-y-2">' +
+      recentPRs.map(p =>
+        '<div class="card flex items-center gap-3 px-4 py-3"><span class="text-brand">' + icon('trophy', 'h-5 w-5') + '</span>' +
+        '<span class="flex-1 font-semibold">' + esc(p.name) + '</span><span class="text-xs text-mut">' + fmtDate(p.date) + '</span></div>').join('') +
+      '</div>';
+  }
+
+  if (!state.history.length) {
+    html +=
+      '<div class="card mt-6 border-dashed p-6 text-center">' +
+        '<p class="font-semibold">No workouts logged yet</p>' +
+        '<p class="mt-1 text-sm text-mut">Start your first session above, or load sample data to explore the charts and history.</p>' +
+        '<button onclick="loadSample()" class="press mt-4 min-h-[48px] rounded-xl border border-brand/50 bg-brand/10 px-5 font-bold text-brand2">Load 8 weeks of sample data</button>' +
+      '</div>';
+  }
+
+  html +=
+    '<div class="card mt-8 p-5">' +
+      '<h3 class="font-display text-2xl font-bold flex items-center gap-2"><span class="text-brand">' + icon('chart', 'h-5 w-5') + '</span>Double Progression</h3>' +
+      '<ol class="mt-3 space-y-2 text-sm text-zinc-300">' +
+        '<li class="flex gap-3"><span class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-brand/15 text-xs font-bold text-brand">1</span>Pick a weight you can lift for the bottom of the rep range.</li>' +
+        '<li class="flex gap-3"><span class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-brand/15 text-xs font-bold text-brand">2</span>Add one rep per session with perfect technique.</li>' +
+        '<li class="flex gap-3"><span class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-brand/15 text-xs font-bold text-brand">3</span>Hit the ceiling on every set → add 2.5 kg and repeat.</li>' +
+      '</ol>' +
+    '</div>';
+  return html;
+}
+function statTile(value, label) {
+  return '<div class="card p-4 text-center"><p class="tabular font-display text-2xl font-bold">' + value + '</p><p class="mt-0.5 text-[11px] font-semibold uppercase tracking-wider text-mut">' + label + '</p></div>';
+}
+
+/* ================= ROUTINES ================= */
+function renderRoutines() {
+  let html =
+    '<div class="flex items-center justify-between">' +
+      '<h2 class="font-display text-4xl font-bold">Workout</h2>' +
+      '<button onclick="openBuilder()" class="press flex min-h-[44px] items-center gap-1.5 rounded-xl border border-line bg-surface px-4 text-sm font-bold">' + icon('plus', 'h-4 w-4') + 'New routine</button>' +
+    '</div>' +
+    '<button onclick="startEmpty()" class="press card mt-5 flex w-full items-center gap-3 p-4 text-left hover:border-brand/50">' +
+      '<span class="flex h-11 w-11 items-center justify-center rounded-xl bg-brand/15 text-brand">' + icon('plus', 'h-5 w-5') + '</span>' +
+      '<span><span class="block font-bold">Start empty workout</span><span class="text-sm text-mut">Freestyle — add exercises as you go</span></span>' +
+    '</button>' +
+    '<h3 class="mt-7 text-xs font-bold uppercase tracking-widest text-mut">My routines</h3>' +
+    '<div class="mt-3 space-y-3">';
+  for (const r of state.routines) {
+    const last = state.history.find(h => h.routineId === r.id);
+    html +=
+      '<div class="card p-4">' +
+        '<div class="flex items-center justify-between gap-3">' +
+          '<div class="min-w-0">' +
+            '<h4 class="font-display truncate text-2xl font-bold">' + esc(r.name) + '</h4>' +
+            (r.focus ? '<p class="text-xs font-bold uppercase tracking-wider text-brand">' + esc(r.focus) + '</p>' : '') +
+          '</div>' +
+          '<div class="flex flex-shrink-0 items-center gap-1.5">' +
+            '<button aria-label="Edit routine" onclick="openBuilder(\'' + r.id + '\')" class="press flex h-11 w-11 items-center justify-center rounded-xl border border-line text-mut hover:text-white">' + icon('pencil', 'h-4 w-4') + '</button>' +
+            '<button onclick="startRoutine(\'' + r.id + '\')" class="press flex min-h-[44px] items-center gap-1.5 rounded-xl bg-brand px-4 font-bold text-zinc-950">' + icon('play', 'h-4 w-4') + 'Start</button>' +
+          '</div>' +
+        '</div>' +
+        '<p class="mt-2 text-sm text-mut">' + r.exercises.map(e => esc(e.name) + ' <span class="text-zinc-600">' + e.sets + '×' + repLabel(e) + '</span>').join(' · ') + '</p>' +
+        (last ? '<p class="mt-2 text-xs text-zinc-500">Last done ' + fmtDate(last.date) + ' · ' + fmtVol(workoutVolume(last)) + '</p>' : '') +
+      '</div>';
+  }
+  return html + '</div>';
+}
+function repLabel(e) { return e.repMin === e.repMax ? String(e.repMin) : e.repMin + '–' + e.repMax; }
+
+/* ================= Routine builder ================= */
+let builder = null;
+function openBuilder(id) {
+  const r = id ? state.routines.find(x => x.id === id) : null;
+  builder = r ? JSON.parse(JSON.stringify(r)) : { id: null, name: '', focus: '', exercises: [] };
+  renderBuilder();
+}
+function renderBuilder() {
+  const b = builder;
+  let rows = b.exercises.map((e, i) =>
+    '<div class="rounded-xl border border-line bg-surface2 p-3">' +
+      '<div class="flex items-center justify-between gap-2">' +
+        '<p class="min-w-0 flex-1 truncate font-semibold">' + esc(e.name) + '</p>' +
+        '<button aria-label="Remove exercise" onclick="builderRemove(' + i + ')" class="press flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-mut hover:text-neg">' + icon('trash', 'h-4 w-4') + '</button>' +
+      '</div>' +
+      '<div class="mt-2 grid grid-cols-4 gap-2 text-sm">' +
+        bNum(i, 'sets', 'Sets', e.sets) + bNum(i, 'repMin', 'Rep min', e.repMin) + bNum(i, 'repMax', 'Rep max', e.repMax) + bNum(i, 'rest', 'Rest s', e.rest) +
+      '</div>' +
+    '</div>').join('');
+  openModal(
+    '<div class="flex items-center justify-between"><h3 class="font-display text-2xl font-bold">' + (b.id ? 'Edit routine' : 'New routine') + '</h3>' +
+    '<button aria-label="Close" onclick="closeModal()" class="press flex h-10 w-10 items-center justify-center rounded-lg text-mut">' + icon('x', 'h-5 w-5') + '</button></div>' +
+    '<label class="mt-4 block text-xs font-bold uppercase tracking-wider text-mut">Name<input id="bName" type="text" value="' + esc(b.name) + '" oninput="builder.name=this.value" placeholder="e.g. Push Day" class="mt-1 w-full rounded-xl border border-line bg-surface2 px-4 py-3 font-semibold text-white placeholder:text-zinc-600"></label>' +
+    '<label class="mt-3 block text-xs font-bold uppercase tracking-wider text-mut">Focus (optional)<input type="text" value="' + esc(b.focus || '') + '" oninput="builder.focus=this.value" placeholder="e.g. Hypertrophy" class="mt-1 w-full rounded-xl border border-line bg-surface2 px-4 py-3 font-semibold text-white placeholder:text-zinc-600"></label>' +
+    '<div class="mt-4 space-y-2">' + rows + '</div>' +
+    '<button onclick="openLibrary(\'builder\')" class="press mt-3 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border border-dashed border-line py-3 font-semibold text-mut hover:text-white">' + icon('plus', 'h-4 w-4') + 'Add exercise</button>' +
+    '<div class="mt-5 flex gap-3">' +
+      (b.id ? '<button onclick="deleteRoutine(\'' + b.id + '\')" class="press flex h-12 w-12 items-center justify-center rounded-xl border border-neg/40 text-neg" aria-label="Delete routine">' + icon('trash', 'h-5 w-5') + '</button>' : '') +
+      '<button onclick="saveBuilder()" class="press min-h-[48px] flex-1 rounded-xl bg-brand font-bold text-zinc-950">Save routine</button>' +
+    '</div>');
+}
+function bNum(i, field, label, val) {
+  return '<label class="block text-[10px] font-bold uppercase tracking-wider text-mut">' + label +
+    '<input type="number" inputmode="numeric" min="0" value="' + val + '" oninput="builder.exercises[' + i + '].' + field + '=+this.value" class="tabular mt-1 w-full rounded-lg border border-line bg-surface px-2 py-2 text-center font-semibold text-white"></label>';
+}
+function builderRemove(i) { builder.exercises.splice(i, 1); renderBuilder(); }
+function saveBuilder() {
+  if (!builder.name.trim()) { toast('Give the routine a name'); return; }
+  if (!builder.exercises.length) { toast('Add at least one exercise'); return; }
+  if (builder.id) {
+    const i = state.routines.findIndex(r => r.id === builder.id);
+    state.routines[i] = builder;
+  } else { builder.id = uid(); state.routines.push(builder); }
+  save(); closeModal(); navTo('routines'); toast('Routine saved', 'ok');
+}
+function deleteRoutine(id) {
+  confirmDlg('Delete routine?', 'This removes the routine template. Your workout history is kept.', 'Delete', () => {
+    state.routines = state.routines.filter(r => r.id !== id);
+    save(); navTo('routines'); toast('Routine deleted');
+  }, true);
+}
+
+/* ================= Exercise library modal ================= */
+function openLibrary(target) {
+  window._libTarget = target;
+  openModal(
+    '<div class="flex items-center justify-between"><h3 class="font-display text-2xl font-bold">Add exercise</h3>' +
+    '<button aria-label="Close" onclick="' + (target === 'builder' ? 'renderBuilder()' : 'closeModal()') + '" class="press flex h-10 w-10 items-center justify-center rounded-lg text-mut">' + icon('x', 'h-5 w-5') + '</button></div>' +
+    '<div class="relative mt-3"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-mut">' + icon('search', 'h-4 w-4') + '</span>' +
+    '<input id="libSearch" type="text" placeholder="Search exercises…" oninput="renderLibList(this.value)" class="w-full rounded-xl border border-line bg-surface2 py-3 pl-10 pr-4 font-semibold text-white placeholder:text-zinc-600"></div>' +
+    '<div id="libList" class="mt-3 max-h-[45vh] space-y-1 overflow-y-auto"></div>');
+  renderLibList('');
+  setTimeout(() => $('#libSearch') && $('#libSearch').focus(), 50);
+}
+function renderLibList(q) {
+  q = q.toLowerCase();
+  const items = LIB.filter(([n, m]) => n.toLowerCase().includes(q) || m.toLowerCase().includes(q));
+  $('#libList').innerHTML = items.map(([n, m]) =>
+    '<button onclick="pickExercise(\'' + esc(n).replace(/'/g, "\\'") + '\')" class="press flex w-full items-center justify-between rounded-xl px-3 py-3 text-left hover:bg-surface2 min-h-[48px]">' +
+      '<span class="font-semibold">' + esc(n) + '</span><span class="rounded-full bg-surface2 border border-line px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-mut">' + m + '</span>' +
+    '</button>').join('') || '<p class="px-3 py-6 text-center text-sm text-mut">No matches — try another term.</p>';
+}
+function pickExercise(name) {
+  if (window._libTarget === 'builder') {
+    builder.exercises.push(ex(name, 3, 8, 12, 90));
+    renderBuilder();
+  } else {
+    sessionAddExercise(name);
+    closeModal();
+  }
+}
+
+/* ================= ACTIVE SESSION ================= */
+function newSessionFromRoutine(r) {
+  return {
+    id: uid(), routineId: r ? r.id : null,
+    name: r ? r.name : 'Freestyle Workout',
+    startedAt: Date.now(),
+    exercises: (r ? r.exercises : []).map(e => sessionEx(e.name, e.sets, e, e.rest))
+  };
+}
+function sessionEx(name, nSets, tmpl, rest) {
+  const prev = lastSetsFor(name);
+  const sets = [];
+  for (let i = 0; i < nSets; i++) {
+    const p = prev && prev[Math.min(i, prev.length - 1)];
+    sets.push({
+      weight: p ? p.weight : '', reps: '',
+      done: false, pr: false,
+      prev: p ? (p.weight > 0 ? p.weight + ' kg × ' + p.reps : 'BW × ' + p.reps) : null
+    });
+  }
+  return { name, muscle: muscleOf(name), rest: rest || 90, target: tmpl ? repLabel(tmpl) : '8–12', sets };
+}
+function startRoutine(id) {
+  const r = state.routines.find(x => x.id === id);
+  if (!r) return;
+  session = newSessionFromRoutine(r);
+  saveSession(); openSession();
+}
+function startEmpty() { session = newSessionFromRoutine(null); saveSession(); openSession(); }
+
+function openSession() {
+  $('#sessionOverlay').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  renderSession();
+  clearInterval(elapsedInt);
+  elapsedInt = setInterval(() => {
+    const el = $('#elapsed');
+    if (el && session) el.textContent = fmtClock((Date.now() - session.startedAt) / 1000);
+  }, 1000);
+}
+function renderSession() {
+  const s = session;
+  const doneSets = s.exercises.reduce((t, e) => t + e.sets.filter(x => x.done).length, 0);
+  const vol = s.exercises.reduce((t, e) => t + e.sets.reduce((a, x) => a + (x.done ? (x.weight || 0) * (x.reps || 0) : 0), 0), 0);
+  let html =
+    '<div class="sticky top-0 z-10 border-b border-line bg-bg/90 backdrop-blur-md">' +
+      '<div class="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">' +
+        '<button aria-label="Cancel workout" onclick="cancelSession()" class="press flex h-11 w-11 items-center justify-center rounded-xl border border-line text-mut hover:text-neg">' + icon('x', 'h-5 w-5') + '</button>' +
+        '<div class="text-center"><p class="font-display text-xl font-bold leading-none">' + esc(s.name) + '</p>' +
+        '<p class="tabular mt-0.5 text-sm font-semibold text-brand" ><span id="elapsed">' + fmtClock((Date.now() - s.startedAt) / 1000) + '</span> · ' + doneSets + ' sets · ' + fmtVol(vol) + '</p></div>' +
+        '<button onclick="finishSession()" class="press flex min-h-[44px] items-center rounded-xl bg-pos px-4 font-bold text-zinc-950">Finish</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="mx-auto max-w-3xl px-4 pb-44 pt-5">';
+
+  s.exercises.forEach((e, ei) => {
+    const max = histMax(e.name);
+    html +=
+      '<div class="card mb-4 overflow-hidden">' +
+        '<div class="flex items-center justify-between border-b border-line px-4 py-3">' +
+          '<div><h3 class="font-bold">' + esc(e.name) + '</h3>' +
+          '<p class="text-xs text-mut">' + esc(e.muscle) + ' · target ' + e.target + ' reps · rest ' + e.rest + 's' + (max ? ' · best e1RM <span class="tabular">' + round1(max) + '</span> kg' : '') + '</p></div>' +
+          '<button aria-label="Remove exercise" onclick="sessionRemoveExercise(' + ei + ')" class="press flex h-10 w-10 items-center justify-center rounded-lg text-zinc-600 hover:text-neg">' + icon('trash', 'h-4 w-4') + '</button>' +
+        '</div>' +
+        '<div class="grid grid-cols-[2rem_1fr_4.5rem_4.5rem_3rem] items-center gap-2 px-4 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">' +
+          '<span>Set</span><span>Previous</span><span class="text-center">kg</span><span class="text-center">Reps</span><span></span>' +
+        '</div>';
+    e.sets.forEach((st, si) => {
+      const doneCls = st.done ? 'bg-pos/10' : '';
+      html +=
+        '<div class="grid grid-cols-[2rem_1fr_4.5rem_4.5rem_3rem] items-center gap-2 px-4 py-1.5 ' + doneCls + '">' +
+          '<span class="tabular text-sm font-bold text-mut">' + (si + 1) + (st.pr ? '<span class="text-brand">' + icon('bolt', 'inline h-3.5 w-3.5 -mt-0.5 ml-0.5') + '</span>' : '') + '</span>' +
+          '<span class="tabular truncate text-sm text-zinc-500">' + (st.prev || '—') + '</span>' +
+          '<input aria-label="Weight kg" type="number" inputmode="decimal" min="0" step="0.5" value="' + st.weight + '" placeholder="kg" oninput="syncSet(' + ei + ',' + si + ',\'weight\',this.value)" class="tabular min-h-[44px] w-full rounded-lg border border-line bg-surface2 px-1 text-center font-semibold text-white placeholder:text-zinc-600 ' + (st.done ? 'opacity-60' : '') + '">' +
+          '<input aria-label="Reps" type="number" inputmode="numeric" min="0" step="1" value="' + st.reps + '" placeholder="' + e.target + '" oninput="syncSet(' + ei + ',' + si + ',\'reps\',this.value)" onkeydown="if(event.key===\'Enter\')completeSet(' + ei + ',' + si + ')" class="tabular min-h-[44px] w-full rounded-lg border border-line bg-surface2 px-1 text-center font-semibold text-white placeholder:text-zinc-600 ' + (st.done ? 'opacity-60' : '') + '">' +
+          '<button aria-label="' + (st.done ? 'Mark set incomplete' : 'Complete set') + '" onclick="completeSet(' + ei + ',' + si + ')" class="press mx-auto flex h-11 w-11 items-center justify-center rounded-xl border ' + (st.done ? 'border-pos bg-pos text-zinc-950' : 'border-line bg-surface2 text-mut hover:border-pos/60 hover:text-pos') + '">' + icon('check', 'h-5 w-5') + '</button>' +
+        '</div>';
+    });
+    html +=
+        '<button onclick="addSet(' + ei + ')" class="press m-3 mt-2 flex min-h-[44px] w-[calc(100%-1.5rem)] items-center justify-center gap-1.5 rounded-xl border border-dashed border-line py-2 text-sm font-semibold text-mut hover:text-white">' + icon('plus', 'h-4 w-4') + 'Add set</button>' +
+      '</div>';
+  });
+
+  html +=
+      '<button onclick="openLibrary(\'session\')" class="press flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl border border-brand/40 bg-brand/10 py-3 font-bold text-brand2">' + icon('plus', 'h-5 w-5') + 'Add exercise</button>' +
+    '</div>' +
+    // Rest timer bar
+    '<div id="restBar" class="fixed inset-x-0 bottom-0 z-20 hidden border-t border-brand/40 bg-surface/95 backdrop-blur-md" style="padding-bottom: env(safe-area-inset-bottom);">' +
+      '<div class="mx-auto max-w-3xl px-4 py-3">' +
+        '<div class="h-1.5 w-full overflow-hidden rounded-full bg-surface2"><div id="restProg" class="h-full rounded-full bg-brand transition-[width] duration-1000 ease-linear" style="width:100%"></div></div>' +
+        '<div class="mt-2.5 flex items-center justify-between">' +
+          '<div class="flex items-center gap-2 text-brand">' + icon('timer', 'h-5 w-5') + '<span class="text-xs font-bold uppercase tracking-widest">Rest</span>' +
+          '<span id="restClock" class="tabular font-display text-3xl font-bold text-white">0:00</span></div>' +
+          '<div class="flex items-center gap-2">' +
+            '<button onclick="restAdjust(-15)" class="press flex h-11 w-11 items-center justify-center rounded-xl border border-line font-bold" aria-label="Subtract 15 seconds">-15</button>' +
+            '<button onclick="restAdjust(15)" class="press flex h-11 w-11 items-center justify-center rounded-xl border border-line font-bold" aria-label="Add 15 seconds">+15</button>' +
+            '<button onclick="restSkip()" class="press flex min-h-[44px] items-center rounded-xl bg-brand px-4 font-bold text-zinc-950">Skip</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  $('#sessionOverlay').innerHTML = html;
+  if (restTimer) updateRestUI();
+}
+function syncSet(ei, si, field, val) {
+  session.exercises[ei].sets[si][field] = val === '' ? '' : +val;
+  saveSession();
+}
+function completeSet(ei, si) {
+  const e = session.exercises[ei], st = e.sets[si];
+  if (st.done) { st.done = false; st.pr = false; saveSession(); renderSession(); return; }
+  const w = +st.weight || 0, r = +st.reps || 0;
+  if (r <= 0) { toast('Enter reps first'); return; }
+  st.weight = w; st.reps = r; st.done = true;
+  // PR check: against history + earlier sets this session
+  let ceiling = histMax(e.name);
+  for (const ex2 of session.exercises) if (ex2.name === e.name)
+    for (const s2 of ex2.sets) if (s2.done && s2 !== st) ceiling = Math.max(ceiling, e1rm(s2.weight, s2.reps));
+  const cur = e1rm(w, r);
+  st.pr = ceiling > 0 && cur > ceiling;
+  saveSession(); renderSession();
+  if (st.pr) toast(icon('trophy', 'inline h-4 w-4 -mt-1 mr-1') + 'New PR — ' + esc(e.name) + ' e1RM ' + round1(cur) + ' kg', 'pr');
+  const isLastOfWorkout = session.exercises.every(x => x.sets.every(s2 => s2.done));
+  if (!isLastOfWorkout) restStart(e.rest);
+}
+function addSet(ei) {
+  const e = session.exercises[ei];
+  const last = e.sets[e.sets.length - 1];
+  e.sets.push({ weight: last ? last.weight : '', reps: '', done: false, pr: false, prev: last ? last.prev : null });
+  saveSession(); renderSession();
+}
+function sessionAddExercise(name) {
+  session.exercises.push(sessionEx(name, 3, null, 90));
+  saveSession(); renderSession();
+  setTimeout(() => { const ov = $('#sessionOverlay'); ov.scrollTo({ top: ov.scrollHeight, behavior: 'smooth' }); }, 60);
+}
+function sessionRemoveExercise(ei) {
+  const e = session.exercises[ei];
+  const hasDone = e.sets.some(s => s.done);
+  const doIt = () => { session.exercises.splice(ei, 1); saveSession(); renderSession(); };
+  if (hasDone) confirmDlg('Remove ' + e.name + '?', 'You already logged sets for this exercise in this workout.', 'Remove', doIt, true);
+  else doIt();
+}
+function cancelSession() {
+  confirmDlg('Discard workout?', 'All sets logged in this session will be lost.', 'Discard', () => {
+    closeSessionUI(); session = null; saveSession(); toast('Workout discarded');
+  }, true);
+}
+function closeSessionUI() {
+  restStop();
+  clearInterval(elapsedInt);
+  $('#sessionOverlay').classList.add('hidden');
+  $('#sessionOverlay').innerHTML = '';
+  document.body.style.overflow = '';
+  navTo(currentView);
+}
+function finishSession() {
+  const doneSets = session.exercises.reduce((t, e) => t + e.sets.filter(x => x.done).length, 0);
+  if (!doneSets) { cancelSession(); return; }
+  const duration = Math.round((Date.now() - session.startedAt) / 1000);
+  const workout = {
+    id: session.id, routineId: session.routineId, name: session.name,
+    date: new Date().toISOString(), duration,
+    exercises: session.exercises
+      .map(e => ({ name: e.name, muscle: e.muscle, sets: e.sets.filter(s => s.done).map(s => ({ weight: s.weight || 0, reps: s.reps, done: true, pr: !!s.pr })) }))
+      .filter(e => e.sets.length),
+    prs: []
+  };
+  workout.prs = workout.exercises.filter(e => e.sets.some(s => s.pr)).map(e => e.name);
+  state.history.unshift(workout);
+  save();
+  session = null; saveSession();
+  closeSessionUI();
+  // Summary
+  const vol = workoutVolume(workout);
+  openModal(
+    '<div class="text-center">' +
+      '<span class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-pos/15 text-pos">' + icon('check', 'h-8 w-8') + '</span>' +
+      '<h3 class="font-display mt-4 text-4xl font-bold">WORKOUT<br>COMPLETE</h3>' +
+      '<p class="mt-1 text-sm text-mut">' + esc(workout.name) + ' · ' + fmtDate(workout.date) + '</p>' +
+      '<div class="mt-5 grid grid-cols-3 gap-3">' +
+        statTile(fmtDur(duration), 'Duration') + statTile(fmtVol(vol), 'Volume') + statTile(workoutSets(workout), 'Sets') +
+      '</div>' +
+      (workout.prs.length ?
+        '<div class="mt-4 rounded-xl border border-brand/40 bg-brand/10 p-4 text-left">' +
+          '<p class="flex items-center gap-2 font-bold text-brand2">' + icon('trophy', 'h-5 w-5') + workout.prs.length + ' Personal Record' + (workout.prs.length > 1 ? 's' : '') + '</p>' +
+          '<p class="mt-1 text-sm text-zinc-300">' + workout.prs.map(esc).join(' · ') + '</p>' +
+        '</div>' : '') +
+      '<button onclick="closeModal();navTo(\'home\')" class="press mt-5 min-h-[52px] w-full rounded-xl bg-brand font-bold text-zinc-950">Done</button>' +
+    '</div>');
+  renderStreakChip();
+}
+
+/* ================= Rest timer ================= */
+function restStart(sec) {
+  restStop();
+  restTimer = { endAt: Date.now() + sec * 1000, total: sec, int: setInterval(tickRest, 250) };
+  const bar = $('#restBar');
+  if (bar) { bar.classList.remove('hidden'); bar.classList.add('rest-glow'); }
+  updateRestUI();
+}
+function tickRest() {
+  if (!restTimer) return;
+  if (Date.now() >= restTimer.endAt) {
+    restStop(); beep(); toast('Rest over — next set!', 'ok');
+    return;
+  }
+  updateRestUI();
+}
+function updateRestUI() {
+  if (!restTimer) return;
+  const left = (restTimer.endAt - Date.now()) / 1000;
+  const clock = $('#restClock'), prog = $('#restProg'), bar = $('#restBar');
+  if (bar) bar.classList.remove('hidden');
+  if (clock) clock.textContent = fmtClock(left);
+  if (prog) prog.style.width = Math.max(0, (left / restTimer.total) * 100) + '%';
+}
+function restAdjust(d) {
+  if (!restTimer) return;
+  restTimer.endAt += d * 1000;
+  restTimer.total = Math.max(1, restTimer.total + d);
+  updateRestUI();
+}
+function restSkip() { restStop(); }
+function restStop() {
+  if (restTimer) clearInterval(restTimer.int);
+  restTimer = null;
+  const bar = $('#restBar');
+  if (bar) { bar.classList.add('hidden'); bar.classList.remove('rest-glow'); }
+}
+
+/* ================= HISTORY ================= */
+function renderHistory() {
+  if (!state.history.length) {
+    return '<h2 class="font-display text-4xl font-bold">History</h2>' +
+      '<div class="card mt-6 border-dashed p-8 text-center">' +
+        '<span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-surface2 text-mut">' + icon('calendar', 'h-6 w-6') + '</span>' +
+        '<p class="mt-3 font-semibold">Nothing here yet</p>' +
+        '<p class="mt-1 text-sm text-mut">Finish your first workout and it will show up here.</p>' +
+        '<button onclick="navTo(\'routines\')" class="press mt-4 min-h-[48px] rounded-xl bg-brand px-5 font-bold text-zinc-950">Start a workout</button>' +
+      '</div>';
+  }
+  let html = '<h2 class="font-display text-4xl font-bold">History</h2><p class="mt-1 text-sm text-mut">' + state.history.length + ' workouts logged</p><div class="mt-5 space-y-3">';
+  for (const w of state.history) {
+    const vol = workoutVolume(w), sets = workoutSets(w);
+    html +=
+      '<details class="card overflow-hidden">' +
+        '<summary class="press flex cursor-pointer items-center justify-between gap-3 p-4">' +
+          '<div class="min-w-0">' +
+            '<h3 class="font-display truncate text-2xl font-bold">' + esc(w.name) + '</h3>' +
+            '<p class="mt-0.5 text-xs text-mut">' + fmtDate(w.date) + ' · ' + fmtDur(w.duration) + ' · ' + fmtVol(vol) + ' · ' + sets + ' sets' +
+            ((w.prs || []).length ? ' · <span class="font-bold text-brand">' + w.prs.length + ' PR' + (w.prs.length > 1 ? 's' : '') + '</span>' : '') + '</p>' +
+          '</div>' +
+          '<span class="chev flex-shrink-0 text-mut">' + icon('chevdown', 'h-5 w-5') + '</span>' +
+        '</summary>' +
+        '<div class="border-t border-line px-4 py-3">' +
+          w.exercises.map(e =>
+            '<div class="py-2"><p class="text-sm font-bold">' + esc(e.name) + '</p>' +
+            '<p class="tabular mt-0.5 text-sm text-mut">' + e.sets.map(s =>
+              '<span class="' + (s.pr ? 'font-bold text-brand' : '') + '">' + (s.weight > 0 ? s.weight + '×' + s.reps : 'BW×' + s.reps) + (s.pr ? icon('bolt', 'inline h-3 w-3 -mt-0.5') : '') + '</span>').join('<span class="text-zinc-700"> · </span>') + '</p></div>').join('') +
+          '<button onclick="deleteWorkout(\'' + w.id + '\')" class="press mb-1 mt-2 flex min-h-[40px] items-center gap-1.5 rounded-lg px-2 text-xs font-bold text-zinc-600 hover:text-neg">' + icon('trash', 'h-3.5 w-3.5') + 'Delete workout</button>' +
+        '</div>' +
+      '</details>';
+  }
+  return html + '</div>';
+}
+function deleteWorkout(id) {
+  confirmDlg('Delete this workout?', 'It will be removed from your history and stats permanently.', 'Delete', () => {
+    state.history = state.history.filter(w => w.id !== id);
+    save(); navTo('history'); toast('Workout deleted');
+  }, true);
+}
+
+/* ================= PROGRESS ================= */
+function renderProgress() {
+  if (!state.history.length) {
+    return '<h2 class="font-display text-4xl font-bold">Progress</h2>' +
+      '<div class="card mt-6 border-dashed p-8 text-center">' +
+        '<span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-surface2 text-mut">' + icon('chart', 'h-6 w-6') + '</span>' +
+        '<p class="mt-3 font-semibold">No data to chart yet</p>' +
+        '<p class="mt-1 text-sm text-mut">Log workouts to unlock volume trends, strength curves and PR tracking — or load sample data.</p>' +
+        '<button onclick="loadSample()" class="press mt-4 min-h-[48px] rounded-xl border border-brand/50 bg-brand/10 px-5 font-bold text-brand2">Load sample data</button>' +
+      '</div>';
+  }
+  const totalVol = state.history.reduce((t, w) => t + workoutVolume(w), 0);
+  const totalPRs = state.history.reduce((t, w) => t + (w.prs || []).length, 0);
+  const exNames = [...new Set(state.history.flatMap(w => w.exercises.filter(e => e.sets.some(s => s.weight > 0)).map(e => e.name)))].sort();
+  const defaultEx = exNames.includes('Flat Barbell Bench Press') ? 'Flat Barbell Bench Press' : exNames[0];
+
+  return '<h2 class="font-display text-4xl font-bold">Progress</h2>' +
+    '<div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">' +
+      statTile(currentStreakWeeks() + ' wk', 'Streak') + statTile(state.history.length, 'Workouts') +
+      statTile(fmtVol(totalVol), 'Total volume') + statTile(totalPRs, 'Total PRs') +
+    '</div>' +
+    '<div class="card mt-4 p-4"><h3 class="font-bold">Weekly volume</h3><p class="text-xs text-mut">Total kg lifted per week — last 8 weeks</p><div class="mt-3 h-48"><canvas id="chVol"></canvas></div></div>' +
+    '<div class="card mt-4 p-4">' +
+      '<div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="font-bold">Strength curve</h3><p class="text-xs text-mut">Estimated 1RM per session (Epley)</p></div>' +
+      '<select id="exSel" onchange="drawStrength(this.value)" class="min-h-[44px] rounded-xl border border-line bg-surface2 px-3 text-sm font-semibold text-white" aria-label="Choose exercise">' +
+        exNames.map(n => '<option ' + (n === defaultEx ? 'selected' : '') + '>' + esc(n) + '</option>').join('') +
+      '</select></div>' +
+      '<div class="mt-3 h-48"><canvas id="chStr"></canvas></div></div>' +
+    '<div class="card mt-4 p-4"><h3 class="font-bold">Muscle split</h3><p class="text-xs text-mut">Sets per muscle group — last 30 days</p><div class="mx-auto mt-3 h-56 max-w-[260px]"><canvas id="chMus"></canvas></div></div>' +
+    '<div class="card mt-4 overflow-hidden">' +
+      '<div class="border-b border-line p-4"><h3 class="font-bold flex items-center gap-2"><span class="text-brand">' + icon('trophy', 'h-4 w-4') + '</span>Personal records</h3></div>' +
+      prTable() +
+    '</div>';
+}
+function prTable() {
+  const best = {};
+  for (const w of state.history) for (const e of w.exercises) for (const s of e.sets) {
+    if (!s.done || !(s.weight > 0)) continue;
+    const v = e1rm(s.weight, s.reps);
+    if (!best[e.name] || v > best[e.name].v) best[e.name] = { v, w: s.weight, r: s.reps, date: w.date };
+  }
+  const rows = Object.entries(best).sort((a, b) => b[1].v - a[1].v).slice(0, 10);
+  if (!rows.length) return '<p class="p-4 text-sm text-mut">No weighted sets logged yet.</p>';
+  return '<div class="divide-y divide-line">' + rows.map(([name, b]) =>
+    '<div class="flex items-center justify-between gap-3 px-4 py-3">' +
+      '<div class="min-w-0"><p class="truncate text-sm font-semibold">' + esc(name) + '</p><p class="text-xs text-mut">' + fmtDate(b.date) + '</p></div>' +
+      '<div class="tabular flex-shrink-0 text-right"><p class="font-display text-xl font-bold">' + b.w + '<span class="text-sm text-mut"> kg × ' + b.r + '</span></p>' +
+      '<p class="text-xs text-brand2">e1RM ' + round1(b.v) + ' kg</p></div>' +
+    '</div>').join('') + '</div>';
+}
+const CHART_GRID = 'rgba(255,255,255,0.06)';
+function drawCharts() {
+  if (typeof Chart === 'undefined') return;
+  Chart.defaults.color = '#A1A1AA';
+  Chart.defaults.font.family = 'Barlow, sans-serif';
+  Chart.defaults.borderColor = CHART_GRID;
+  // Weekly volume
+  const weeks = [];
+  const m0 = mondayOf(new Date());
+  for (let i = 7; i >= 0; i--) { const d = new Date(m0); d.setDate(d.getDate() - i * 7); weeks.push(d); }
+  const volByWeek = weeks.map(d => {
+    const k = d.toISOString().slice(0, 10);
+    return state.history.filter(w => weekKey(new Date(w.date)) === k).reduce((t, w) => t + workoutVolume(w), 0);
+  });
+  const volCtx = $('#chVol');
+  if (volCtx) charts.vol = new Chart(volCtx, {
+    type: 'bar',
+    data: { labels: weeks.map(d => d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })),
+      datasets: [{ data: volByWeek, backgroundColor: weeks.map((d, i) => i === weeks.length - 1 ? '#F97316' : 'rgba(249,115,22,0.45)'), borderRadius: 6, maxBarThickness: 34 }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => Math.round(c.parsed.y).toLocaleString() + ' kg' } } },
+      scales: { y: { beginAtZero: true, grid: { color: CHART_GRID }, ticks: { callback: v => v >= 1000 ? v / 1000 + 'k' : v } }, x: { grid: { display: false } } } }
+  });
+  // Strength
+  const sel = $('#exSel');
+  if (sel) drawStrength(sel.value);
+  // Muscle split
+  const cutoff = Date.now() - 30 * 864e5;
+  const counts = {};
+  for (const w of state.history) {
+    if (new Date(w.date) < cutoff) continue;
+    for (const e of w.exercises) counts[e.muscle || muscleOf(e.name)] = (counts[e.muscle || muscleOf(e.name)] || 0) + e.sets.filter(s => s.done).length;
+  }
+  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const musCtx = $('#chMus');
+  if (musCtx && entries.length) charts.mus = new Chart(musCtx, {
+    type: 'doughnut',
+    data: { labels: entries.map(e => e[0]), datasets: [{ data: entries.map(e => e[1]),
+      backgroundColor: ['#F97316', '#22C55E', '#38BDF8', '#A78BFA', '#F472B6', '#FBBF24', '#34D399', '#F87171', '#818CF8'],
+      borderColor: '#121215', borderWidth: 3 }] },
+    options: { maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'right', labels: { boxWidth: 10, boxHeight: 10, padding: 10, font: { size: 11 } } } } }
+  });
+}
+function drawStrength(name) {
+  const pts = [];
+  for (let i = state.history.length - 1; i >= 0; i--) { // chronological
+    const w = state.history[i];
+    let best = 0;
+    for (const e of w.exercises) if (e.name === name) for (const s of e.sets) if (s.done) best = Math.max(best, e1rm(s.weight, s.reps));
+    if (best > 0) pts.push({ x: fmtDate(w.date).replace(/^\w+, /, ''), y: round1(best) });
+  }
+  if (charts.str) charts.str.destroy();
+  const ctx = $('#chStr');
+  if (!ctx) return;
+  charts.str = new Chart(ctx, {
+    type: 'line',
+    data: { labels: pts.map(p => p.x), datasets: [{ data: pts.map(p => p.y), borderColor: '#F97316', borderWidth: 2.5,
+      pointBackgroundColor: '#F97316', pointRadius: 3, pointHoverRadius: 5, tension: 0.35,
+      fill: true, backgroundColor: gradFill(ctx) }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => 'e1RM ' + c.parsed.y + ' kg' } } },
+      scales: { y: { grid: { color: CHART_GRID }, ticks: { callback: v => v + ' kg' } }, x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } } } }
+  });
+}
+function gradFill(canvas) {
+  const g = canvas.getContext('2d').createLinearGradient(0, 0, 0, 190);
+  g.addColorStop(0, 'rgba(249,115,22,0.25)'); g.addColorStop(1, 'rgba(249,115,22,0)');
+  return g;
+}
+
+/* ================= Sample data ================= */
+function loadSample() {
+  const START = {
+    'Flat Barbell Bench Press': 60, 'Weighted Pull-Ups': 10, 'Overhead Press (Barbell)': 40, 'Barbell Rows': 60,
+    'Back Squat': 80, 'Romanian Deadlift': 70, 'Leg Press': 120, 'Calf Raises': 60,
+    'Incline Dumbbell Bench': 22, 'Lat Pulldowns': 55, 'Lateral Raises': 10, 'Face Pulls': 25,
+    'Leg Extensions': 45, 'Leg Curls': 40, 'Walking Lunges': 20, 'Hanging Leg Raises': 0
+  };
+  const routinesByName = Object.fromEntries(state.routines.map(r => [r.name, r]));
+  const days = [1, 2, 4, 5]; // Mon Tue Thu Fri
+  const hist = [];
+  let cycleIdx = 0;
+  const thisMonday = mondayOf(new Date());
+  for (let wk = 8; wk >= 1; wk--) {
+    for (const day of days) {
+      const r = routinesByName[CYCLE[cycleIdx % 4]]; cycleIdx++;
+      if (!r) continue;
+      const d = new Date(thisMonday); d.setDate(d.getDate() - wk * 7 + (day - 1)); d.setHours(18, 5, 0, 0);
+      if (d > new Date()) continue;
+      const bump = Math.floor((8 - wk) / 2) * 2.5;
+      const workout = {
+        id: uid(), routineId: r.id, name: r.name, date: d.toISOString(),
+        duration: (48 + Math.floor(Math.random() * 14)) * 60,
+        exercises: r.exercises.map(e => {
+          const base = START[e.name] !== undefined ? START[e.name] : 40;
+          const w = base === 0 ? 0 : base + (e.rest >= 120 ? bump : bump / 2);
+          return { name: e.name, muscle: muscleOf(e.name), sets: Array.from({ length: e.sets }, (_, i) => ({
+            weight: w, reps: Math.min(e.repMax, e.repMin + ((8 - wk) % (e.repMax - e.repMin + 1 || 1)) + (i === 0 ? 1 : 0)),
+            done: true, pr: false })) };
+        }),
+        prs: []
+      };
+      hist.push(workout);
+    }
+  }
+  // mark PRs chronologically
+  const maxes = {};
+  for (const w of hist) {
+    const prNames = new Set();
+    for (const e of w.exercises) for (const s of e.sets) {
+      const v = e1rm(s.weight, s.reps);
+      if (v > 0 && maxes[e.name] && v > maxes[e.name]) { s.pr = true; prNames.add(e.name); }
+      if (v > 0) maxes[e.name] = Math.max(maxes[e.name] || 0, v);
+    }
+    w.prs = [...prNames];
+  }
+  state.history = hist.reverse(); // newest first
+  save();
+  navTo(currentView);
+  toast('Loaded ' + hist.length + ' sample workouts', 'ok');
+}
+
+/* ================= Boot ================= */
+(function boot() {
+  try {
+    const raw = localStorage.getItem(LS_SESSION);
+    if (raw) { session = JSON.parse(raw); }
+  } catch (e) {}
+  navTo('home');
+  if (session) { openSession(); toast('Resumed workout in progress', 'ok'); }
+})();
+</script>
 </body>
 </html>
