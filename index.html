@@ -286,7 +286,10 @@ function navTo(v) {
     const on = b.dataset.nav === v;
     b.classList.toggle('text-brand', on);
     b.classList.toggle('text-mut', !on);
+    if (on) { b.setAttribute('aria-current', 'page'); } else { b.removeAttribute('aria-current'); }
   });
+  const titles = { home: 'Home', routines: 'Workout', history: 'History', progress: 'Progress' };
+  if (titles[v]) document.title = titles[v] + ' | GRIND — Workout Tracker';
   Object.values(charts).forEach(c => c.destroy()); charts = {};
   const r = { home: renderHome, routines: renderRoutines, history: renderHistory, progress: renderProgress }[v];
   $('#view').innerHTML = '<div class="fade-in">' + r() + '</div>';
