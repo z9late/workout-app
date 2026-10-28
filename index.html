@@ -260,14 +260,24 @@ function beep() {
 }
 
 /* ================= Modals ================= */
+let activeModalOpts = null;
 function openModal(html, opts) {
-  opts = opts || {};
+  activeModalOpts = opts || {};
   $('#modalRoot').innerHTML =
-    '<div class="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center" onclick="if(event.target===this)' + (opts.locked ? '' : 'closeModal()') + '">' +
+    '<div class="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center" onclick="if(event.target===this)' + (activeModalOpts.locked ? '' : 'closeModal()') + '">' +
       '<div class="slide-up w-full max-w-lg rounded-t-2xl border border-line bg-surface p-5 shadow-2xl sm:rounded-2xl max-h-[85vh] overflow-y-auto" role="dialog" aria-modal="true">' + html + '</div>' +
     '</div>';
 }
-function closeModal() { $('#modalRoot').innerHTML = ''; }
+function closeModal() {
+  if (activeModalOpts && typeof activeModalOpts.onClose === 'function') activeModalOpts.onClose();
+  $('#modalRoot').innerHTML = '';
+  activeModalOpts = null;
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('#modalRoot') && $('#modalRoot').children.length && (!activeModalOpts || !activeModalOpts.locked)) {
+    closeModal();
+  }
+});
 function confirmDlg(title, body, actionLabel, onYes, danger) {
   window._confirmYes = () => { closeModal(); onYes(); };
   openModal(
@@ -286,6 +296,8 @@ function navTo(v) {
     const on = b.dataset.nav === v;
     b.classList.toggle('text-brand', on);
     b.classList.toggle('text-mut', !on);
+    if (on) b.setAttribute('aria-current', 'page');
+    else b.removeAttribute('aria-current');
   });
   Object.values(charts).forEach(c => c.destroy()); charts = {};
   const r = { home: renderHome, routines: renderRoutines, history: renderHistory, progress: renderProgress }[v];
