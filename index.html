@@ -260,14 +260,30 @@ function beep() {
 }
 
 /* ================= Modals ================= */
+let lastFocusedElement = null;
+let activeModalOpts = null;
 function openModal(html, opts) {
   opts = opts || {};
+  activeModalOpts = opts;
+  lastFocusedElement = document.activeElement;
   $('#modalRoot').innerHTML =
     '<div class="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center" onclick="if(event.target===this)' + (opts.locked ? '' : 'closeModal()') + '">' +
       '<div class="slide-up w-full max-w-lg rounded-t-2xl border border-line bg-surface p-5 shadow-2xl sm:rounded-2xl max-h-[85vh] overflow-y-auto" role="dialog" aria-modal="true">' + html + '</div>' +
     '</div>';
 }
-function closeModal() { $('#modalRoot').innerHTML = ''; }
+function closeModal() {
+  $('#modalRoot').innerHTML = '';
+  activeModalOpts = null;
+  if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+    lastFocusedElement.focus();
+    lastFocusedElement = null;
+  }
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('#modalRoot').firstElementChild && (!activeModalOpts || !activeModalOpts.locked)) {
+    closeModal();
+  }
+});
 function confirmDlg(title, body, actionLabel, onYes, danger) {
   window._confirmYes = () => { closeModal(); onYes(); };
   openModal(
