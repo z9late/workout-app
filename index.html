@@ -286,6 +286,8 @@ function navTo(v) {
     const on = b.dataset.nav === v;
     b.classList.toggle('text-brand', on);
     b.classList.toggle('text-mut', !on);
+    if (on) b.setAttribute('aria-current', 'page');
+    else b.removeAttribute('aria-current');
   });
   Object.values(charts).forEach(c => c.destroy()); charts = {};
   const r = { home: renderHome, routines: renderRoutines, history: renderHistory, progress: renderProgress }[v];
